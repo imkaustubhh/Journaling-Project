@@ -7,6 +7,7 @@ const logger = require('./utils/logger');
 // Import routes
 const authRoutes = require('./routes/auth');
 const articleRoutes = require('./routes/articles');
+const viralRoutes = require('./routes/viral');
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.get('/health', (req, res) => {
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/articles', articleRoutes);
+app.use('/api/viral', viralRoutes);
 
 // 404 handler
 app.use((req, res) => {

@@ -6,8 +6,10 @@
 const cron = require('node-cron');
 const { fetchAndStoreNews, fetchAndStoreIndianNews } = require('../services/newsAggregator');
 const { initializeDefaultSources } = require('../services/credibilityService');
+const { detectViralStories, verifyViralNews } = require('../services/factChecker');
 const Category = require('../models/Category');
 const Article = require('../models/Article');
+const ViralNews = require('../models/ViralNews');
 const logger = require('../utils/logger');
 
 // Store active jobs for management
@@ -71,9 +73,40 @@ function initializeJobs() {
     timezone: 'UTC'
   });
 
+  // Job: Viral news detection and verification (every 2 hours)
+  activeJobs.viralDetection = cron.schedule('15 */2 * * *', async () => {
+    logger.info('[CRON] Starting viral news detection...');
+    try {
+      // Detect new viral stories
+      const viralStories = await detectViralStories();
+      logger.info(`[CRON] Detected ${viralStories.length} new viral stories`);
+
+      // Auto-verify high-virality unverified stories
+      const unverified = await ViralNews.find({
+        'verification.status': 'unverified',
+        'virality.score': { $gte: 50 }
+      }).limit(5);
+
+      for (const story of unverified) {
+        try {
+          await verifyViralNews(story._id);
+          logger.info(`[CRON] Auto-verified: ${story.title.substring(0, 50)}...`);
+        } catch (err) {
+          logger.error(`[CRON] Failed to verify story ${story._id}:`, err.message);
+        }
+      }
+    } catch (error) {
+      logger.error('[CRON] Error in viral detection:', error);
+    }
+  }, {
+    scheduled: true,
+    timezone: 'UTC'
+  });
+
   logger.info('Scheduled jobs initialized:');
   logger.info('  - News fetch (US/Intl): Every hour at :00 UTC');
   logger.info('  - News fetch (India): Every hour at :30 IST');
+  logger.info('  - Viral detection: Every 2 hours at :15');
   logger.info('  - Cleanup: Daily at 00:00 UTC');
 }
 
