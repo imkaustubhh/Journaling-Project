@@ -82,6 +82,7 @@ const SourceSchema = new mongoose.Schema({
 
 // Default credibility ratings for major news sources
 SourceSchema.statics.DEFAULT_RATINGS = {
+  // International Sources
   'Reuters': { overallScore: 95, biasRating: 'center', factualReporting: 'very-high' },
   'Associated Press': { overallScore: 95, biasRating: 'center', factualReporting: 'very-high' },
   'BBC News': { overallScore: 90, biasRating: 'center-left', factualReporting: 'high' },
@@ -118,7 +119,58 @@ SourceSchema.statics.DEFAULT_RATINGS = {
   'Wired': { overallScore: 78, biasRating: 'center-left', factualReporting: 'high' },
   'Ars Technica': { overallScore: 80, biasRating: 'center', factualReporting: 'high' },
   'The Verge': { overallScore: 75, biasRating: 'center-left', factualReporting: 'high' },
-  'Engadget': { overallScore: 75, biasRating: 'center', factualReporting: 'high' }
+  'Engadget': { overallScore: 75, biasRating: 'center', factualReporting: 'high' },
+
+  // Indian News Sources - National
+  'The Hindu': { overallScore: 88, biasRating: 'center-left', factualReporting: 'high' },
+  'The Indian Express': { overallScore: 85, biasRating: 'center', factualReporting: 'high' },
+  'Hindustan Times': { overallScore: 82, biasRating: 'center', factualReporting: 'high' },
+  'India Today': { overallScore: 78, biasRating: 'center', factualReporting: 'high' },
+  'NDTV': { overallScore: 80, biasRating: 'center-left', factualReporting: 'high' },
+  'Times of India': { overallScore: 72, biasRating: 'center', factualReporting: 'mixed' },
+  'The Economic Times': { overallScore: 82, biasRating: 'center', factualReporting: 'high' },
+  'Business Standard': { overallScore: 85, biasRating: 'center', factualReporting: 'high' },
+  'Mint': { overallScore: 84, biasRating: 'center', factualReporting: 'high' },
+  'The Wire': { overallScore: 78, biasRating: 'center-left', factualReporting: 'high' },
+  'Scroll.in': { overallScore: 76, biasRating: 'center-left', factualReporting: 'high' },
+  'The Quint': { overallScore: 74, biasRating: 'center-left', factualReporting: 'high' },
+  'The Print': { overallScore: 80, biasRating: 'center', factualReporting: 'high' },
+  'News18': { overallScore: 68, biasRating: 'center-right', factualReporting: 'mixed' },
+  'Zee News': { overallScore: 60, biasRating: 'right', factualReporting: 'mixed' },
+  'Republic World': { overallScore: 55, biasRating: 'right', factualReporting: 'mixed' },
+  'ABP News': { overallScore: 70, biasRating: 'center', factualReporting: 'mixed' },
+  'Aaj Tak': { overallScore: 65, biasRating: 'center', factualReporting: 'mixed' },
+  'India TV': { overallScore: 62, biasRating: 'center-right', factualReporting: 'mixed' },
+  'Firstpost': { overallScore: 75, biasRating: 'center', factualReporting: 'high' },
+  'Deccan Herald': { overallScore: 80, biasRating: 'center', factualReporting: 'high' },
+  'The Telegraph India': { overallScore: 78, biasRating: 'center-left', factualReporting: 'high' },
+  'The Statesman': { overallScore: 76, biasRating: 'center', factualReporting: 'high' },
+  'The Tribune': { overallScore: 78, biasRating: 'center', factualReporting: 'high' },
+  'The Pioneer': { overallScore: 68, biasRating: 'center-right', factualReporting: 'mixed' },
+  'DNA India': { overallScore: 65, biasRating: 'center', factualReporting: 'mixed' },
+  'Free Press Journal': { overallScore: 70, biasRating: 'center', factualReporting: 'mixed' },
+  'Mid-Day': { overallScore: 65, biasRating: 'center', factualReporting: 'mixed' },
+  'Mumbai Mirror': { overallScore: 68, biasRating: 'center', factualReporting: 'mixed' },
+  'The New Indian Express': { overallScore: 80, biasRating: 'center', factualReporting: 'high' },
+  'Deccan Chronicle': { overallScore: 72, biasRating: 'center', factualReporting: 'mixed' },
+  'The Hans India': { overallScore: 68, biasRating: 'center', factualReporting: 'mixed' },
+  'Outlook India': { overallScore: 76, biasRating: 'center-left', factualReporting: 'high' },
+  'Frontline': { overallScore: 82, biasRating: 'center-left', factualReporting: 'high' },
+  'Caravan Magazine': { overallScore: 84, biasRating: 'center-left', factualReporting: 'very-high' },
+  'Swarajya': { overallScore: 65, biasRating: 'right', factualReporting: 'mixed' },
+  'OpIndia': { overallScore: 45, biasRating: 'right', factualReporting: 'low' },
+  'Alt News': { overallScore: 82, biasRating: 'center', factualReporting: 'very-high' },
+  'Boom Live': { overallScore: 80, biasRating: 'center', factualReporting: 'very-high' },
+  'PTI': { overallScore: 90, biasRating: 'center', factualReporting: 'very-high' },
+  'ANI': { overallScore: 75, biasRating: 'center', factualReporting: 'high' },
+  'IANS': { overallScore: 78, biasRating: 'center', factualReporting: 'high' },
+  'UNI': { overallScore: 75, biasRating: 'center', factualReporting: 'high' },
+  'Moneycontrol': { overallScore: 80, biasRating: 'center', factualReporting: 'high' },
+  'LiveMint': { overallScore: 84, biasRating: 'center', factualReporting: 'high' },
+  'Financial Express': { overallScore: 80, biasRating: 'center', factualReporting: 'high' },
+  'BloombergQuint': { overallScore: 82, biasRating: 'center', factualReporting: 'high' },
+  'CNBC TV18': { overallScore: 78, biasRating: 'center', factualReporting: 'high' },
+  'ET Now': { overallScore: 76, biasRating: 'center', factualReporting: 'high' }
 };
 
 // Get or create source with default ratings

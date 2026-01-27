@@ -5,6 +5,7 @@ const logger = require('../utils/logger');
 const { cache } = require('../config/redis');
 const { search } = require('../config/elasticsearch');
 const xAggregator = require('../services/xAggregator');
+const { fetchAndStoreIndianNews } = require('../services/newsAggregator');
 
 // @desc    Get all articles with filtering
 // @route   GET /api/articles
@@ -467,6 +468,151 @@ const getXTrending = async (req, res) => {
   }
 };
 
+// @desc    Get Indian news articles
+// @route   GET /api/articles/india
+// @access  Public
+const getIndianNews = async (req, res) => {
+  try {
+    const {
+      page = 1,
+      limit = 20,
+      category,
+      minScore = 0,
+      sortBy = 'publishedAt',
+      sortOrder = 'desc'
+    } = req.query;
+
+    // Indian news sources list
+    const indianSources = [
+      'The Hindu', 'The Indian Express', 'Hindustan Times', 'India Today',
+      'NDTV', 'Times of India', 'The Economic Times', 'Business Standard',
+      'Mint', 'LiveMint', 'The Wire', 'Scroll.in', 'The Quint', 'The Print',
+      'News18', 'Zee News', 'ABP News', 'Firstpost', 'Deccan Herald',
+      'The Telegraph India', 'The New Indian Express', 'Outlook India',
+      'PTI', 'ANI', 'Moneycontrol', 'CNBC TV18'
+    ];
+
+    // Build query for Indian sources
+    const query = {
+      isActive: true,
+      'source.name': { $in: indianSources }
+    };
+
+    if (minScore > 0) {
+      query['filteringMetadata.overallScore'] = { $gte: parseInt(minScore) };
+    }
+
+    if (category) {
+      const categoryDoc = await Category.findOne({ slug: category });
+      if (categoryDoc) {
+        query.categories = categoryDoc._id;
+      }
+    }
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const sort = { [sortBy]: sortOrder === 'asc' ? 1 : -1 };
+
+    const [articles, total] = await Promise.all([
+      Article.find(query)
+        .sort(sort)
+        .skip(skip)
+        .limit(parseInt(limit))
+        .populate('categories', 'name slug color'),
+      Article.countDocuments(query)
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: articles,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / parseInt(limit))
+      }
+    });
+  } catch (error) {
+    logger.error('Error fetching Indian news:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching Indian news',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Fetch fresh Indian news from sources
+// @route   POST /api/articles/india/fetch
+// @access  Public (should be protected in production)
+const fetchFreshIndianNews = async (req, res) => {
+  try {
+    // Check cache to prevent too frequent fetches
+    const cacheKey = 'india:lastFetch';
+    const lastFetch = await cache.get(cacheKey);
+
+    if (lastFetch) {
+      return res.status(429).json({
+        success: false,
+        message: 'Please wait before fetching again',
+        lastFetch
+      });
+    }
+
+    const results = await fetchAndStoreIndianNews();
+
+    // Cache the fetch timestamp for 5 minutes
+    await cache.set(cacheKey, new Date().toISOString(), 300);
+
+    res.status(200).json({
+      success: true,
+      message: 'Indian news fetched successfully',
+      data: results
+    });
+  } catch (error) {
+    logger.error('Error fetching fresh Indian news:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching Indian news',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Get Indian news sources with credibility ratings
+// @route   GET /api/articles/india/sources
+// @access  Public
+const getIndianSources = async (req, res) => {
+  try {
+    const indianSourceNames = [
+      'The Hindu', 'The Indian Express', 'Hindustan Times', 'India Today',
+      'NDTV', 'Times of India', 'The Economic Times', 'Business Standard',
+      'Mint', 'LiveMint', 'The Wire', 'Scroll.in', 'The Quint', 'The Print',
+      'News18', 'Zee News', 'Republic World', 'ABP News', 'Aaj Tak',
+      'Firstpost', 'Deccan Herald', 'The Telegraph India', 'The New Indian Express',
+      'Outlook India', 'Frontline', 'Caravan Magazine', 'PTI', 'ANI',
+      'Moneycontrol', 'Financial Express', 'CNBC TV18', 'Alt News', 'Boom Live'
+    ];
+
+    const sources = await Source.find({
+      name: { $in: indianSourceNames },
+      isEnabled: true
+    }).select('name credibilityRating').sort({ 'credibilityRating.overallScore': -1 });
+
+    res.status(200).json({
+      success: true,
+      data: sources,
+      count: sources.length
+    });
+  } catch (error) {
+    logger.error('Error fetching Indian sources:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching Indian sources',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   getArticles,
   getArticle,
@@ -477,5 +623,8 @@ module.exports = {
   searchArticles,
   getXNews,
   searchXNews,
-  getXTrending
+  getXTrending,
+  getIndianNews,
+  fetchFreshIndianNews,
+  getIndianSources
 };

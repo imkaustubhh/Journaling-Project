@@ -75,6 +75,175 @@ async function fetchAllCategories() {
 }
 
 /**
+ * Fetch news specifically from India
+ * @param {Object} options - Fetch options
+ * @returns {Array} Articles from Indian sources
+ */
+async function fetchIndianNews(options = {}) {
+  const { category = 'general', pageSize = 100 } = options;
+
+  const apiKey = process.env.NEWSAPI_KEY;
+  if (!apiKey) {
+    logger.warn('NewsAPI key not configured. Skipping fetch.');
+    return [];
+  }
+
+  try {
+    const response = await axios.get(`${NEWS_API_URL}/top-headlines`, {
+      params: {
+        apiKey,
+        country: 'in',
+        category,
+        pageSize
+      }
+    });
+
+    if (response.data.status === 'ok') {
+      logger.info(`Fetched ${response.data.articles.length} Indian articles (${category})`);
+      return response.data.articles;
+    }
+
+    logger.error('NewsAPI returned error:', response.data.message);
+    return [];
+  } catch (error) {
+    logger.error('Error fetching Indian news:', error.message);
+    return [];
+  }
+}
+
+/**
+ * Fetch from all categories for India
+ * @returns {Array} Combined Indian articles from all categories
+ */
+async function fetchAllIndianCategories() {
+  const categories = ['general', 'technology', 'business', 'science', 'health', 'sports', 'entertainment'];
+  const allArticles = [];
+
+  for (const category of categories) {
+    const articles = await fetchIndianNews({ category, pageSize: 20 });
+    allArticles.push(...articles);
+    await new Promise(resolve => setTimeout(resolve, 500));
+  }
+
+  return allArticles;
+}
+
+/**
+ * Search for news from specific Indian domains
+ * @param {Object} options - Search options
+ */
+async function searchIndianSources(options = {}) {
+  const apiKey = process.env.NEWSAPI_KEY;
+  if (!apiKey) {
+    logger.warn('NewsAPI key not configured');
+    return [];
+  }
+
+  const indianDomains = [
+    'thehindu.com',
+    'indianexpress.com',
+    'hindustantimes.com',
+    'indiatoday.in',
+    'ndtv.com',
+    'timesofindia.indiatimes.com',
+    'economictimes.indiatimes.com',
+    'business-standard.com',
+    'livemint.com',
+    'thewire.in',
+    'scroll.in',
+    'thequint.com',
+    'theprint.in',
+    'news18.com',
+    'firstpost.com',
+    'deccanherald.com',
+    'telegraphindia.com',
+    'newindianexpress.com',
+    'outlookindia.com',
+    'moneycontrol.com'
+  ];
+
+  try {
+    const response = await axios.get(`${NEWS_API_URL}/everything`, {
+      params: {
+        apiKey,
+        domains: indianDomains.join(','),
+        language: 'en',
+        sortBy: options.sortBy || 'publishedAt',
+        pageSize: options.pageSize || 100
+      }
+    });
+
+    if (response.data.status === 'ok') {
+      logger.info(`Fetched ${response.data.articles.length} articles from Indian sources`);
+      return response.data.articles;
+    }
+
+    return [];
+  } catch (error) {
+    logger.error('Error fetching from Indian sources:', error.message);
+    return [];
+  }
+}
+
+/**
+ * Combined fetch for Indian news (headlines + domain search)
+ * @returns {Object} Fetch results
+ */
+async function fetchAndStoreIndianNews() {
+  logger.info('Starting Indian news fetch...');
+  const startTime = Date.now();
+
+  // Fetch from both methods
+  const [headlines, domainNews] = await Promise.all([
+    fetchIndianNews({ pageSize: 100 }),
+    searchIndianSources({ pageSize: 100 })
+  ]);
+
+  const rawArticles = [...headlines, ...domainNews];
+
+  // Remove duplicates
+  const uniqueUrls = new Set();
+  const uniqueArticles = rawArticles.filter(article => {
+    if (!article.url || uniqueUrls.has(article.url)) {
+      return false;
+    }
+    uniqueUrls.add(article.url);
+    return true;
+  });
+
+  logger.info(`Processing ${uniqueArticles.length} unique Indian articles...`);
+
+  let stored = 0;
+  let duplicates = 0;
+
+  for (const rawArticle of uniqueArticles) {
+    if (rawArticle.title === '[Removed]' || rawArticle.content === '[Removed]') {
+      continue;
+    }
+
+    const result = await processAndStoreArticle(rawArticle);
+    if (result) {
+      stored++;
+    } else {
+      duplicates++;
+    }
+  }
+
+  const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+
+  const results = {
+    fetched: rawArticles.length,
+    unique: uniqueArticles.length,
+    stored,
+    duplicates,
+    duration: `${duration}s`
+  };
+
+  logger.info(`Indian news fetch complete: ${stored} new articles stored in ${duration}s`);
+  return results;
+}
+
+/**
  * Process and store a raw article from NewsAPI
  * @param {Object} rawArticle - Raw article from NewsAPI
  * @returns {Object|null} Saved article or null if duplicate
@@ -278,5 +447,10 @@ module.exports = {
   fetchAndStoreNews,
   fetchFromSources,
   searchNews,
-  processAndStoreArticle
+  processAndStoreArticle,
+  // Indian news
+  fetchIndianNews,
+  fetchAllIndianCategories,
+  searchIndianSources,
+  fetchAndStoreIndianNews
 };

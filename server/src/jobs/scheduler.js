@@ -4,7 +4,7 @@
  */
 
 const cron = require('node-cron');
-const { fetchAndStoreNews } = require('../services/newsAggregator');
+const { fetchAndStoreNews, fetchAndStoreIndianNews } = require('../services/newsAggregator');
 const { initializeDefaultSources } = require('../services/credibilityService');
 const Category = require('../models/Category');
 const Article = require('../models/Article');
@@ -19,7 +19,7 @@ const activeJobs = {};
 function initializeJobs() {
   logger.info('Initializing scheduled jobs...');
 
-  // Job: Fetch news every hour
+  // Job: Fetch US/International news every hour
   // Cron expression: '0 * * * *' = at minute 0 of every hour
   activeJobs.fetchNews = cron.schedule('0 * * * *', async () => {
     logger.info('[CRON] Starting hourly news fetch...');
@@ -32,6 +32,21 @@ function initializeJobs() {
   }, {
     scheduled: true,
     timezone: 'UTC'
+  });
+
+  // Job: Fetch Indian news every hour (offset by 30 minutes)
+  // Cron expression: '30 * * * *' = at minute 30 of every hour
+  activeJobs.fetchIndianNews = cron.schedule('30 * * * *', async () => {
+    logger.info('[CRON] Starting hourly Indian news fetch...');
+    try {
+      const results = await fetchAndStoreIndianNews();
+      logger.info(`[CRON] Indian news fetch complete: ${results.stored} new articles`);
+    } catch (error) {
+      logger.error('[CRON] Error in Indian news fetch:', error);
+    }
+  }, {
+    scheduled: true,
+    timezone: 'Asia/Kolkata'
   });
 
   // Job: Cleanup old articles (runs daily at midnight)
@@ -57,7 +72,8 @@ function initializeJobs() {
   });
 
   logger.info('Scheduled jobs initialized:');
-  logger.info('  - News fetch: Every hour at :00');
+  logger.info('  - News fetch (US/Intl): Every hour at :00 UTC');
+  logger.info('  - News fetch (India): Every hour at :30 IST');
   logger.info('  - Cleanup: Daily at 00:00 UTC');
 }
 
@@ -81,6 +97,11 @@ async function runInitialSetup() {
       logger.info('Fetching initial news batch...');
       const results = await fetchAndStoreNews({ category: 'general' });
       logger.info(`Initial fetch complete: ${results.stored} articles stored`);
+
+      // Also fetch Indian news
+      logger.info('Fetching initial Indian news batch...');
+      const indianResults = await fetchAndStoreIndianNews();
+      logger.info(`Initial Indian fetch complete: ${indianResults.stored} articles stored`);
     } else {
       logger.warn('NewsAPI key not configured. Skipping initial fetch.');
       logger.warn('Set NEWSAPI_KEY in .env to enable news fetching.');

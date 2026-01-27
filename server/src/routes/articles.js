@@ -10,7 +10,10 @@ const {
   searchArticles,
   getXNews,
   searchXNews,
-  getXTrending
+  getXTrending,
+  getIndianNews,
+  fetchFreshIndianNews,
+  getIndianSources
 } = require('../controllers/articleController');
 
 // Public routes
@@ -25,6 +28,11 @@ router.get('/stats', getStats);
 router.get('/x/news', getXNews);
 router.get('/x/search', searchXNews);
 router.get('/x/trending', getXTrending);
+
+// Indian news routes
+router.get('/india', getIndianNews);
+router.post('/india/fetch', fetchFreshIndianNews);
+router.get('/india/sources', getIndianSources);
 
 // Single article (keep at bottom to avoid conflicts)
 router.get('/:id', getArticle);
