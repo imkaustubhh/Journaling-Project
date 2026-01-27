@@ -6,15 +6,27 @@ const {
   getTrendingArticles,
   getCategories,
   getSources,
-  getStats
+  getStats,
+  searchArticles,
+  getXNews,
+  searchXNews,
+  getXTrending
 } = require('../controllers/articleController');
 
 // Public routes
 router.get('/', getArticles);
+router.get('/search', searchArticles);
 router.get('/trending', getTrendingArticles);
 router.get('/categories', getCategories);
 router.get('/sources', getSources);
 router.get('/stats', getStats);
+
+// X/Twitter routes
+router.get('/x/news', getXNews);
+router.get('/x/search', searchXNews);
+router.get('/x/trending', getXTrending);
+
+// Single article (keep at bottom to avoid conflicts)
 router.get('/:id', getArticle);
 
 module.exports = router;

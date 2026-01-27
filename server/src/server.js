@@ -1,6 +1,8 @@
 require('dotenv').config();
 const app = require('./app');
 const connectDB = require('./config/database');
+const { connectRedis } = require('./config/redis');
+const { connectElasticsearch } = require('./config/elasticsearch');
 const logger = require('./utils/logger');
 const { initializeJobs, runInitialSetup } = require('./jobs/scheduler');
 
@@ -9,8 +11,14 @@ const PORT = process.env.PORT || 5000;
 // Connect to database and start server
 const startServer = async () => {
   try {
-    // Connect to MongoDB
+    // Connect to MongoDB (required)
     await connectDB();
+
+    // Connect to Redis (optional - for caching)
+    await connectRedis();
+
+    // Connect to Elasticsearch (optional - for search)
+    await connectElasticsearch();
 
     // Start server
     const server = app.listen(PORT, async () => {

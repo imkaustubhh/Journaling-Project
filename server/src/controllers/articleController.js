@@ -2,6 +2,9 @@ const Article = require('../models/Article');
 const Category = require('../models/Category');
 const Source = require('../models/Source');
 const logger = require('../utils/logger');
+const { cache } = require('../config/redis');
+const { search } = require('../config/elasticsearch');
+const xAggregator = require('../services/xAggregator');
 
 // @desc    Get all articles with filtering
 // @route   GET /api/articles
@@ -255,11 +258,224 @@ const getStats = async (req, res) => {
   }
 };
 
+// @desc    Full-text search using Elasticsearch
+// @route   GET /api/articles/search
+// @access  Public
+const searchArticles = async (req, res) => {
+  try {
+    const {
+      q,
+      page = 1,
+      limit = 20,
+      category,
+      source,
+      minScore = 0,
+      startDate,
+      endDate
+    } = req.query;
+
+    if (!q) {
+      return res.status(400).json({
+        success: false,
+        message: 'Search query (q) is required'
+      });
+    }
+
+    // Try cache first
+    const cacheKey = `search:${q}:${page}:${limit}:${category}:${source}:${minScore}`;
+    const cached = await cache.get(cacheKey);
+    if (cached) {
+      return res.status(200).json({ success: true, ...cached, fromCache: true });
+    }
+
+    // Search using Elasticsearch
+    const results = await search.searchArticles(q, {
+      from: (parseInt(page) - 1) * parseInt(limit),
+      size: parseInt(limit),
+      categories: category ? [category] : [],
+      sources: source ? [source] : [],
+      minScore: parseInt(minScore),
+      dateFrom: startDate,
+      dateTo: endDate
+    });
+
+    // If Elasticsearch is not available, fallback to MongoDB text search
+    if (results.total === 0) {
+      const query = {
+        $text: { $search: q },
+        isActive: true,
+        'curation.status': 'approved'
+      };
+
+      if (minScore > 0) {
+        query['filteringMetadata.overallScore'] = { $gte: parseInt(minScore) };
+      }
+
+      const [articles, total] = await Promise.all([
+        Article.find(query)
+          .sort({ score: { $meta: 'textScore' } })
+          .skip((parseInt(page) - 1) * parseInt(limit))
+          .limit(parseInt(limit))
+          .populate('categories', 'name slug color'),
+        Article.countDocuments(query)
+      ]);
+
+      const response = {
+        data: articles,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / parseInt(limit))
+        }
+      };
+
+      await cache.set(cacheKey, response, 300);
+
+      return res.status(200).json({ success: true, ...response });
+    }
+
+    const response = {
+      data: results.hits,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: results.total,
+        pages: Math.ceil(results.total / parseInt(limit))
+      }
+    };
+
+    await cache.set(cacheKey, response, 300);
+
+    res.status(200).json({ success: true, ...response });
+  } catch (error) {
+    logger.error('Error searching articles:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error searching articles',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Get news from X/Twitter
+// @route   GET /api/articles/x/news
+// @access  Public
+const getXNews = async (req, res) => {
+  try {
+    const { limit = 50 } = req.query;
+
+    // Try cache first
+    const cacheKey = `x:news:${limit}`;
+    const cached = await cache.get(cacheKey);
+    if (cached) {
+      return res.status(200).json({ success: true, data: cached, fromCache: true });
+    }
+
+    const { articles } = await xAggregator.fetchFromNewsAccounts({ maxResults: parseInt(limit) });
+
+    // Cache for 5 minutes
+    await cache.set(cacheKey, articles, 300);
+
+    res.status(200).json({
+      success: true,
+      data: articles,
+      count: articles.length
+    });
+  } catch (error) {
+    logger.error('Error fetching X news:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching X news',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Search X/Twitter for news
+// @route   GET /api/articles/x/search
+// @access  Public
+const searchXNews = async (req, res) => {
+  try {
+    const { q, limit = 50 } = req.query;
+
+    if (!q) {
+      return res.status(400).json({
+        success: false,
+        message: 'Search query (q) is required'
+      });
+    }
+
+    // Try cache first
+    const cacheKey = `x:search:${q}:${limit}`;
+    const cached = await cache.get(cacheKey);
+    if (cached) {
+      return res.status(200).json({ success: true, data: cached, fromCache: true });
+    }
+
+    const { articles } = await xAggregator.searchNews(q, { maxResults: parseInt(limit) });
+
+    // Cache for 5 minutes
+    await cache.set(cacheKey, articles, 300);
+
+    res.status(200).json({
+      success: true,
+      data: articles,
+      count: articles.length
+    });
+  } catch (error) {
+    logger.error('Error searching X:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error searching X',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Get trending news from X/Twitter
+// @route   GET /api/articles/x/trending
+// @access  Public
+const getXTrending = async (req, res) => {
+  try {
+    const { limit = 50 } = req.query;
+
+    // Try cache first
+    const cacheKey = `x:trending:${limit}`;
+    const cached = await cache.get(cacheKey);
+    if (cached) {
+      return res.status(200).json({ success: true, data: cached, fromCache: true });
+    }
+
+    const { articles } = await xAggregator.getTrendingNews({ maxResults: parseInt(limit) });
+
+    // Cache for 5 minutes
+    await cache.set(cacheKey, articles, 300);
+
+    res.status(200).json({
+      success: true,
+      data: articles,
+      count: articles.length
+    });
+  } catch (error) {
+    logger.error('Error fetching X trending:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching X trending',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   getArticles,
   getArticle,
   getTrendingArticles,
   getCategories,
   getSources,
-  getStats
+  getStats,
+  searchArticles,
+  getXNews,
+  searchXNews,
+  getXTrending
 };
