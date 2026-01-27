@@ -96,9 +96,8 @@ const login = async (req, res) => {
       });
     }
 
-    // Update last login
-    user.lastLogin = new Date();
-    await user.save();
+    // Update last login (use updateOne to avoid triggering pre-save hook)
+    await User.updateOne({ _id: user._id }, { lastLogin: new Date() });
 
     // Generate token
     const token = user.generateAuthToken();
