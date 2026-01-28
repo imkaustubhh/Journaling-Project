@@ -292,6 +292,67 @@ const URLVerificationResult = ({ result, getScoreColor, getBiasLabel, getBiasCol
         </div>
       )}
 
+      {result.crossVerification && result.crossVerification.sourcesFound > 0 && (
+        <div className="cross-verification-section">
+          <h4>✓ Cross-Verification ({result.crossVerification.sourcesFound} Sources Found)</h4>
+          <div className="verification-confidence">
+            <span>Confidence: </span>
+            <div className="confidence-bar">
+              <div
+                className="confidence-fill"
+                style={{
+                  width: `${result.crossVerification.confidence}%`,
+                  backgroundColor: getScoreColor(result.crossVerification.confidence)
+                }}
+              ></div>
+            </div>
+            <span className="confidence-value">{result.crossVerification.confidence}%</span>
+          </div>
+          {result.crossVerification.corroboratingSources && result.crossVerification.corroboratingSources.length > 0 && (
+            <div className="corroborating-sources">
+              <p className="section-subtitle">Similar coverage from:</p>
+              {result.crossVerification.corroboratingSources.map((source, idx) => (
+                <div key={idx} className="corr-source-item">
+                  <div className="corr-source-header">
+                    <strong>{source.source}</strong>
+                    <span className="corr-source-score" style={{ color: getScoreColor(source.score) }}>
+                      {source.score}/100
+                    </span>
+                  </div>
+                  <a href={source.url} target="_blank" rel="noopener noreferrer" className="corr-source-title">
+                    {source.title}
+                  </a>
+                  {source.matchedKeywords && source.matchedKeywords.length > 0 && (
+                    <div className="matched-keywords">
+                      {source.matchedKeywords.map((kw, i) => (
+                        <span key={i} className="keyword-tag">{kw}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+          {result.crossVerification.keywords && result.crossVerification.keywords.length > 0 && (
+            <div className="extracted-keywords">
+              <p className="section-subtitle">Key topics extracted:</p>
+              <div className="keywords-list">
+                {result.crossVerification.keywords.map((kw, idx) => (
+                  <span key={idx} className="keyword-badge">{kw}</span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {result.contentLength !== undefined && (
+        <div className="content-info">
+          <span className="info-icon">📄</span>
+          <span>Analyzed {result.contentLength} characters of article content</span>
+        </div>
+      )}
+
       {result.claims && result.claims.length > 0 && (
         <div className="claims-section">
           <h4>Key Claims Found:</h4>
