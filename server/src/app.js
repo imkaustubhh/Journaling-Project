@@ -8,6 +8,7 @@ const logger = require('./utils/logger');
 const authRoutes = require('./routes/auth');
 const articleRoutes = require('./routes/articles');
 const viralRoutes = require('./routes/viral');
+const verificationRoutes = require('./routes/verification');
 
 const app = express();
 
@@ -38,6 +39,7 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/articles', articleRoutes);
 app.use('/api/viral', viralRoutes);
+app.use('/api/verification', verificationRoutes);
 
 // 404 handler
 app.use((req, res) => {

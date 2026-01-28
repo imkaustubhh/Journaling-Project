@@ -1,230 +1,214 @@
-# Real News Filter - News Aggregation & Filtering Website
+# News Filtering Website 📰
 
-A full-stack web application that aggregates news from multiple sources and uses multi-layer filtering (keyword-based, source credibility, AI analysis, and manual curation) to deliver credible news.
+A modern, AI-powered news aggregation and filtering platform that helps you discover credible news while filtering out misinformation.
 
-## Tech Stack
+![PS5-Inspired Dark Theme](https://img.shields.io/badge/Theme-PS5%20Inspired-0070D1?style=for-the-badge)
+![Auto Updates](https://img.shields.io/badge/Updates-Automatic-00D26A?style=for-the-badge)
+![AI Powered](https://img.shields.io/badge/AI-OpenAI%20GPT-412991?style=for-the-badge)
 
-- **Frontend:** React 18 + Vite + React Router
-- **Backend:** Node.js + Express
-- **Database:** MongoDB
-- **Authentication:** JWT (JSON Web Tokens)
+## ✨ Features
 
-## Project Structure
+### 🔍 Multi-Layer Filtering System
+- **Keyword Filter**: Detects clickbait and sensational content
+- **Source Credibility**: Rates news sources based on reliability
+- **AI Analysis**: OpenAI GPT analyzes quality, bias, and credibility
+- **Manual Curation**: Admin review for flagged articles
+
+### 📡 Viral News Detection
+- Real-time detection of trending stories
+- Fact-checking and claim verification
+- Misinformation alerts
+- Cross-source validation
+
+### 🛡️ News Verifier
+- **Verify by URL**: Analyze any news article instantly
+- **Verify by Keywords**: Search and compare multiple sources
+- Get credibility scores, bias analysis, and recommendations
+
+### 🎨 Modern UI
+- PS5-inspired dark theme
+- Glassmorphism effects
+- Smooth animations
+- Fully responsive design
+
+### ⚙️ Automatic Updates
+- News fetching every hour
+- Viral detection every 2 hours
+- Daily database cleanup
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js 18+ 
+- MongoDB (local or Atlas)
+- NewsAPI key (free tier available)
+- OpenAI API key (for AI analysis)
+
+### Local Development
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/news-filter.git
+   cd news-filter
+   ```
+
+2. **Set up Backend**
+   ```bash
+   cd server
+   npm install
+   cp .env.example .env
+   # Edit .env with your API keys
+   npm run dev
+   ```
+
+3. **Set up Frontend**
+   ```bash
+   cd client
+   npm install
+   cp .env.example .env
+   npm run dev
+   ```
+
+4. **Access the app**
+   - Frontend: http://localhost:5173
+   - Backend: http://localhost:5000
+
+## 📦 Tech Stack
+
+### Frontend
+- **React** - UI framework
+- **Vite** - Build tool
+- **Axios** - HTTP client
+- **React Router** - Routing
+
+### Backend
+- **Node.js + Express** - Server framework
+- **MongoDB + Mongoose** - Database
+- **JWT** - Authentication
+- **node-cron** - Scheduled jobs
+- **OpenAI** - AI analysis
+- **NewsAPI** - News aggregation
+
+### Optional Services
+- **Redis** - Caching
+- **Elasticsearch** - Advanced search
+
+## 🌐 Deployment
+
+See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for detailed instructions on deploying to:
+- **Frontend**: Vercel
+- **Backend**: Render
+- **Database**: MongoDB Atlas
+
+## 📊 Project Structure
 
 ```
-Journaling Project/
-├── client/          # React frontend
-├── server/          # Node.js backend
-└── README.md
+news-filter/
+├── client/                 # React frontend
+│   ├── src/
+│   │   ├── components/    # React components
+│   │   ├── contexts/      # React contexts
+│   │   ├── hooks/         # Custom hooks
+│   │   ├── services/      # API services
+│   │   └── styles/        # CSS files
+│   └── package.json
+│
+├── server/                # Node.js backend
+│   ├── src/
+│   │   ├── controllers/  # Route controllers
+│   │   ├── models/       # Mongoose models
+│   │   ├── routes/       # API routes
+│   │   ├── services/     # Business logic
+│   │   ├── jobs/         # Cron jobs
+│   │   └── middleware/   # Express middleware
+│   └── package.json
+│
+└── DEPLOYMENT_GUIDE.md   # Deployment instructions
 ```
 
-## Prerequisites
+## 🔑 Environment Variables
 
-- Node.js (v16 or higher)
-- MongoDB (local or MongoDB Atlas)
-- npm or yarn
-
-## Installation
-
-### 1. Clone and Setup
-
-```bash
-cd "Journaling Project"
-```
-
-### 2. Backend Setup
-
-```bash
-cd server
-npm install
-```
-
-Create a `.env` file in the `server` directory:
-
-```bash
+### Backend (.env)
+```env
 NODE_ENV=development
 PORT=5000
 MONGODB_URI=mongodb://localhost:27017/news-filter
-JWT_SECRET=your-secret-key-change-in-production
-JWT_EXPIRE=7d
+JWT_SECRET=your_secret_key
+NEWSAPI_KEY=your_newsapi_key
+OPENAI_API_KEY=your_openai_key
 FRONTEND_URL=http://localhost:5173
 ```
 
-### 3. Frontend Setup
-
-```bash
-cd client
-npm install
-```
-
-Create a `.env` file in the `client` directory:
-
-```bash
+### Frontend (.env)
+```env
 VITE_API_URL=http://localhost:5000/api
 ```
 
-## Running the Application
+## 📱 Screenshots
 
-### Start MongoDB
+### Dashboard
+![Dashboard](docs/screenshots/dashboard.png)
 
-If using local MongoDB:
+### News Verifier
+![Verifier](docs/screenshots/verifier.png)
 
-```bash
-mongod
-```
+### Viral News
+![Viral News](docs/screenshots/viral.png)
 
-Or use MongoDB Atlas cloud database.
+## 🔄 Automatic Update Schedule
 
-### Start Backend Server
+| Task | Frequency | Description |
+|------|-----------|-------------|
+| US/International News | Every hour | Fetches latest news from NewsAPI |
+| Indian News | Every hour | Fetches India-specific news |
+| Viral Detection | Every 2 hours | Detects and verifies trending stories |
+| Database Cleanup | Daily | Removes old articles (keeps 30 days) |
 
-```bash
-cd server
-npm run dev
-```
-
-Backend will run on `http://localhost:5000`
-
-### Start Frontend Development Server
-
-```bash
-cd client
-npm run dev
-```
-
-Frontend will run on `http://localhost:5173`
-
-## Features Implemented (Phase 1)
-
-- ✅ User registration and authentication
-- ✅ Login/logout functionality
-- ✅ Protected routes
-- ✅ JWT token-based authentication
-- ✅ Secure password hashing with bcrypt
-- ✅ User dashboard
-
-## Upcoming Features
-
-### Phase 2: News Aggregation
-- Automated news fetching from NewsAPI.org
-- Article storage and deduplication
-- Background jobs for periodic updates
-
-### Phase 3: Filtering System
-- Keyword-based filtering (clickbait detection)
-- Source credibility ratings
-- AI-powered content analysis
-- Multi-layer scoring system
-
-### Phase 4: Admin Panel
-- Manual article curation
-- Source management
-- Category management
-
-### Phase 5: User Preferences
-- Customizable filters
-- Source preferences
-- Category subscriptions
-
-## API Endpoints
+## 🛠️ API Endpoints
 
 ### Authentication
 - `POST /api/auth/register` - Register new user
 - `POST /api/auth/login` - Login user
-- `GET /api/auth/me` - Get current user (protected)
-- `POST /api/auth/logout` - Logout user (protected)
+- `GET /api/auth/me` - Get current user
 
-### Health Check
-- `GET /health` - Server health status
+### Articles
+- `GET /api/articles` - Get filtered articles (paginated)
+- `GET /api/articles/:id` - Get single article
+- `POST /api/articles/:id/save` - Save article
 
-## Testing
+### Viral News
+- `GET /api/viral/trending` - Get trending stories
+- `GET /api/viral/misinformation` - Get fake news alerts
 
-### Register a New User
+### Verification
+- `POST /api/verification/url` - Verify article by URL
+- `POST /api/verification/keywords` - Verify by keywords
 
-1. Go to `http://localhost:5173`
-2. Click "Register here"
-3. Fill in name, email, and password
-4. Submit to create account
+## 🤝 Contributing
 
-### Login
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-1. Go to `http://localhost:5173/login`
-2. Enter your email and password
-3. Access the protected dashboard
+## 📝 License
 
-### Testing with API Client (Postman/cURL)
+This project is licensed under the MIT License.
 
-#### Register:
-```bash
-curl -X POST http://localhost:5000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "John Doe",
-    "email": "john@example.com",
-    "password": "password123"
-  }'
-```
+## 🙏 Acknowledgments
 
-#### Login:
-```bash
-curl -X POST http://localhost:5000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "john@example.com",
-    "password": "password123"
-  }'
-```
+- Design inspired by PlayStation 5 UI
+- News data from NewsAPI.org
+- AI analysis powered by OpenAI
+- Fact-checking sources: Alt News, Boom Live, Snopes, PolitiFact
 
-## Security Features
+## 📧 Support
 
-- Password hashing with bcrypt (10 salt rounds)
-- JWT token authentication
-- Protected routes requiring valid tokens
-- Helmet.js for security headers
-- CORS configuration
-- Input validation
+For issues and questions:
+- Create an issue on GitHub
+- Email: your-email@example.com
 
-## Environment Variables
+---
 
-### Backend (.env)
-- `NODE_ENV` - Environment (development/production)
-- `PORT` - Server port
-- `MONGODB_URI` - MongoDB connection string
-- `JWT_SECRET` - Secret key for JWT signing
-- `JWT_EXPIRE` - Token expiration time
-- `FRONTEND_URL` - Frontend URL for CORS
-
-### Frontend (.env)
-- `VITE_API_URL` - Backend API URL
-
-## Development
-
-### Backend Scripts
-- `npm run dev` - Start development server with nodemon
-- `npm start` - Start production server
-
-### Frontend Scripts
-- `npm run dev` - Start Vite development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-
-## Troubleshooting
-
-### MongoDB Connection Error
-- Ensure MongoDB is running locally or check MongoDB Atlas connection string
-- Verify `MONGODB_URI` in `.env` file
-
-### CORS Errors
-- Check `FRONTEND_URL` in backend `.env` matches your frontend URL
-- Verify backend is running on port 5000
-
-### Token Expired
-- Tokens expire after 7 days by default
-- Login again to get a new token
-
-## License
-
-MIT
-
-## Author
-
-Built with Claude Code
+Built with ❤️ using React, Node.js, and AI

@@ -4,6 +4,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useArticles, useStats } from '../../hooks/useArticles';
 import ArticleCard from './ArticleCard';
 import FilterSidebar from './FilterSidebar';
+import ViralNews from './ViralNews';
+import NewsVerifier from './NewsVerifier';
 import '../../styles/Dashboard.css';
 
 const Dashboard = () => {
@@ -69,6 +71,12 @@ const Dashboard = () => {
         <FilterSidebar filters={filters} onFilterChange={updateFilters} />
 
         <div className="news-feed">
+          {/* News Verifier Section */}
+          <NewsVerifier />
+
+          {/* Viral News Section */}
+          <ViralNews />
+
           <div className="feed-header">
             <h2>
               {filters.category ? `${filters.category.charAt(0).toUpperCase() + filters.category.slice(1)} News` : 'Latest News'}
