@@ -165,10 +165,21 @@ const NewsVerifier = () => {
 
 // URL Verification Result Component
 const URLVerificationResult = ({ result, getScoreColor, getBiasLabel, getBiasColor }) => {
+  // Safety checks
+  if (!result) {
+    return <div className="error">No result data available</div>;
+  }
+
+  const overallScore = result.overallScore || 0;
+  const credibilityScore = result.credibilityScore || 0;
+  const qualityScore = result.qualityScore || 0;
+  const sourceCredibility = result.sourceCredibility || 0;
+  const biasScore = result.biasScore || 0;
+
   return (
     <div className="url-result">
       <div className="result-header">
-        <h3>{result.title}</h3>
+        <h3>{result.title || 'Untitled Article'}</h3>
         <a href={result.url} target="_blank" rel="noopener noreferrer" className="source-link">
           {result.source?.name || 'Unknown Source'}
           <span className="external-icon">↗</span>
@@ -176,7 +187,7 @@ const URLVerificationResult = ({ result, getScoreColor, getBiasLabel, getBiasCol
       </div>
 
       <div className="score-overview">
-        <div className="main-score" style={{ '--score-color': getScoreColor(result.overallScore) }}>
+        <div className="main-score" style={{ '--score-color': getScoreColor(overallScore) }}>
           <div className="score-circle">
             <svg viewBox="0 0 100 100">
               <circle cx="50" cy="50" r="45" className="score-bg"></circle>
@@ -186,12 +197,12 @@ const URLVerificationResult = ({ result, getScoreColor, getBiasLabel, getBiasCol
                 r="45"
                 className="score-fill"
                 style={{
-                  strokeDashoffset: 283 - (283 * result.overallScore) / 100
+                  strokeDashoffset: 283 - (283 * overallScore) / 100
                 }}
               ></circle>
             </svg>
             <div className="score-value">
-              <span className="score-number">{result.overallScore || 0}</span>
+              <span className="score-number">{overallScore}</span>
               <span className="score-label">Overall Score</span>
             </div>
           </div>
@@ -204,12 +215,12 @@ const URLVerificationResult = ({ result, getScoreColor, getBiasLabel, getBiasCol
               <div
                 className="score-bar-fill"
                 style={{
-                  width: `${result.credibilityScore || 0}%`,
-                  backgroundColor: getScoreColor(result.credibilityScore || 0)
+                  width: `${credibilityScore}%`,
+                  backgroundColor: getScoreColor(credibilityScore)
                 }}
               ></div>
             </div>
-            <span className="score-number">{result.credibilityScore || 0}/100</span>
+            <span className="score-number">{credibilityScore}/100</span>
           </div>
 
           <div className="score-item">
@@ -218,27 +229,27 @@ const URLVerificationResult = ({ result, getScoreColor, getBiasLabel, getBiasCol
               <div
                 className="score-bar-fill"
                 style={{
-                  width: `${result.qualityScore || 0}%`,
-                  backgroundColor: getScoreColor(result.qualityScore || 0)
+                  width: `${qualityScore}%`,
+                  backgroundColor: getScoreColor(qualityScore)
                 }}
               ></div>
             </div>
-            <span className="score-number">{result.qualityScore || 0}/100</span>
+            <span className="score-number">{qualityScore}/100</span>
           </div>
 
-          {result.sourceCredibility !== undefined && (
+          {sourceCredibility > 0 && (
             <div className="score-item">
               <span className="score-label">Source Reputation</span>
               <div className="score-bar">
                 <div
                   className="score-bar-fill"
                   style={{
-                    width: `${result.sourceCredibility || 0}%`,
-                    backgroundColor: getScoreColor(result.sourceCredibility || 0)
+                    width: `${sourceCredibility}%`,
+                    backgroundColor: getScoreColor(sourceCredibility)
                   }}
                 ></div>
               </div>
-              <span className="score-number">{result.sourceCredibility || 0}/100</span>
+              <span className="score-number">{sourceCredibility}/100</span>
             </div>
           )}
         </div>
@@ -250,14 +261,12 @@ const URLVerificationResult = ({ result, getScoreColor, getBiasLabel, getBiasCol
             {result.isFactual ? '✓ Factual' : '💭 Opinion'}
           </span>
         )}
-        {result.biasScore !== undefined && (
-          <span
-            className="analysis-tag bias"
-            style={{ '--bias-color': getBiasColor(result.biasScore) }}
-          >
-            {getBiasLabel(result.biasScore)}
-          </span>
-        )}
+        <span
+          className="analysis-tag bias"
+          style={{ '--bias-color': getBiasColor(biasScore) }}
+        >
+          {getBiasLabel(biasScore)}
+        </span>
         {result.sentiment && (
           <span className={`analysis-tag sentiment-${result.sentiment}`}>
             {result.sentiment === 'positive' ? '😊' : result.sentiment === 'negative' ? '😟' : '😐'}{' '}
