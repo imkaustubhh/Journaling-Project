@@ -4,6 +4,7 @@
  */
 
 const axios = require('axios');
+const cheerio = require('cheerio');
 const Article = require('../models/Article');
 const { analyzeWithAI } = require('../services/aiAnalyzer');
 const { analyzeForMisinformation, extractClaims, crossReferenceWithSources } = require('../services/factChecker');
@@ -53,39 +54,150 @@ function getSourceNameFromDomain(domain) {
 }
 
 /**
- * Fetch article content from URL
+ * Extract keywords from text
+ */
+function extractKeywords(text, minLength = 4) {
+  // Remove common words and extract significant terms
+  const commonWords = new Set(['that', 'this', 'with', 'from', 'have', 'been', 'were', 'will', 'would', 'could', 'should', 'there', 'their', 'what', 'when', 'where', 'which', 'while', 'after', 'before', 'about', 'also', 'into', 'than', 'them', 'these', 'those', 'through', 'during', 'each', 'other', 'some', 'such', 'only', 'same', 'said', 'says', 'very', 'more', 'most', 'many']);
+
+  const words = text.toLowerCase()
+    .replace(/[^\w\s]/g, ' ')
+    .split(/\s+/)
+    .filter(word => word.length >= minLength && !commonWords.has(word));
+
+  // Count frequency
+  const frequency = {};
+  words.forEach(word => {
+    frequency[word] = (frequency[word] || 0) + 1;
+  });
+
+  // Get top keywords
+  return Object.entries(frequency)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([word]) => word);
+}
+
+/**
+ * Find corroborating sources
+ */
+async function findCorroboratingSources(keywords, excludeUrl) {
+  try {
+    // Build search query from keywords
+    const searchRegex = keywords.map(kw => `(?=.*${kw})`).join('');
+
+    // Search for similar articles
+    const articles = await Article.find({
+      url: { $ne: excludeUrl },
+      $or: keywords.map(keyword => ({
+        $or: [
+          { title: { $regex: keyword, $options: 'i' } },
+          { description: { $regex: keyword, $options: 'i' } }
+        ]
+      })),
+      isActive: true,
+      'curation.status': 'approved'
+    })
+    .sort({ 'filteringMetadata.overallScore': -1, publishedAt: -1 })
+    .limit(5)
+    .lean();
+
+    return articles.map(article => ({
+      title: article.title,
+      source: article.source?.name,
+      url: article.url,
+      score: article.filteringMetadata?.overallScore || 0,
+      publishedAt: article.publishedAt,
+      matchedKeywords: keywords.filter(kw =>
+        article.title?.toLowerCase().includes(kw) ||
+        article.description?.toLowerCase().includes(kw)
+      )
+    }));
+  } catch (error) {
+    logger.error('Error finding corroborating sources:', error);
+    return [];
+  }
+}
+
+/**
+ * Fetch article content from URL with full content extraction
  */
 async function fetchArticleFromURL(url) {
   try {
     const response = await axios.get(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
       },
-      timeout: 10000
+      timeout: 15000
     });
 
-    // Extract basic metadata (simple extraction - can be enhanced with cheerio)
-    const html = response.data;
+    const $ = cheerio.load(response.data);
 
-    // Extract title
-    const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-    const title = titleMatch ? titleMatch[1].trim() : 'Untitled';
+    // Extract title (try multiple selectors)
+    let title = $('meta[property="og:title"]').attr('content') ||
+                $('meta[name="twitter:title"]').attr('content') ||
+                $('h1').first().text() ||
+                $('title').text() ||
+                'Untitled';
+    title = title.trim().replace(/\s+/g, ' ');
 
-    // Extract meta description
-    const descMatch = html.match(/<meta\s+name=["']description["']\s+content=["']([^"']+)["']/i);
-    const description = descMatch ? descMatch[1].trim() : '';
+    // Extract description
+    let description = $('meta[property="og:description"]').attr('content') ||
+                     $('meta[name="description"]').attr('content') ||
+                     $('meta[name="twitter:description"]').attr('content') ||
+                     '';
+    description = description.trim();
+
+    // Extract full article content
+    // Try common article selectors
+    let content = '';
+    const articleSelectors = [
+      'article',
+      '.article-content',
+      '.story-content',
+      '.post-content',
+      '.entry-content',
+      'div[itemprop="articleBody"]',
+      '.content-body',
+      'main p'
+    ];
+
+    for (const selector of articleSelectors) {
+      const el = $(selector);
+      if (el.length > 0) {
+        content = el.text().trim();
+        if (content.length > 200) break; // Found substantial content
+      }
+    }
+
+    // Fallback: get all paragraph text
+    if (content.length < 200) {
+      content = $('p').map((i, el) => $(el).text()).get().join(' ').trim();
+    }
+
+    // Clean up content
+    content = content.replace(/\s+/g, ' ').substring(0, 5000); // Limit to 5000 chars
 
     // Extract domain/source
     const urlObj = new URL(url);
     const domain = urlObj.hostname.replace('www.', '');
     const sourceName = getSourceNameFromDomain(domain);
 
+    // Extract publish date
+    let publishedAt = $('meta[property="article:published_time"]').attr('content') ||
+                      $('meta[name="publish-date"]').attr('content') ||
+                      $('time').attr('datetime');
+
+    logger.info(`Extracted article: ${title.substring(0, 50)}... (${content.length} chars)`);
+
     return {
       title,
-      description,
+      description: description || content.substring(0, 300),
       url,
       source: { name: sourceName, url: urlObj.origin },
-      content: description // Use description as content for now
+      content: content || description,
+      publishedAt: publishedAt ? new Date(publishedAt) : null,
+      contentLength: content.length
     };
   } catch (error) {
     logger.error('Error fetching URL:', error.message);
@@ -161,6 +273,15 @@ exports.verifyByURL = async (req, res) => {
       });
     }
 
+    // Extract keywords from content for cross-referencing
+    const fullText = `${articleData.title} ${articleData.content || articleData.description}`;
+    const keywords = extractKeywords(fullText);
+
+    // Find corroborating sources
+    logger.info(`Extracted keywords: ${keywords.join(', ')}`);
+    const corroboratingSources = await findCorroboratingSources(keywords, url);
+    logger.info(`Found ${corroboratingSources.length} corroborating sources`);
+
     // Perform fresh analysis
     const [aiAnalysis, misinfoAnalysis, sourceCredibility] = await Promise.all([
       analyzeWithAI(articleData),
@@ -169,15 +290,28 @@ exports.verifyByURL = async (req, res) => {
     ]);
 
     // Extract claims
-    const claims = extractClaims(`${articleData.title} ${articleData.description}`);
+    const claims = extractClaims(fullText);
 
-    // Calculate overall score (with proper fallbacks)
+    // Calculate cross-verification confidence
+    const verificationConfidence = corroboratingSources.length > 0 ?
+      Math.min(100, 50 + (corroboratingSources.length * 10)) : 0;
+
+    const avgCorroboratingScore = corroboratingSources.length > 0 ?
+      corroboratingSources.reduce((sum, s) => sum + s.score, 0) / corroboratingSources.length : 0;
+
+    // Calculate overall score (with cross-verification boost)
     const sourceScore = sourceCredibility?.overallScore || 50;
-    const overallScore = Math.round(
-      (aiAnalysis.qualityScore * 0.35) +
-      (aiAnalysis.credibilityScore * 0.35) +
-      (sourceScore * 0.30)
+    let overallScore = Math.round(
+      (aiAnalysis.qualityScore * 0.30) +
+      (aiAnalysis.credibilityScore * 0.30) +
+      (sourceScore * 0.25) +
+      (verificationConfidence * 0.15) // Boost from corroboration
     );
+
+    // Bonus if high-quality sources corroborate
+    if (corroboratingSources.length >= 2 && avgCorroboratingScore >= 70) {
+      overallScore = Math.min(100, overallScore + 10);
+    }
 
     const verification = {
       title: articleData.title,
@@ -190,17 +324,28 @@ exports.verifyByURL = async (req, res) => {
       isFactual: aiAnalysis.isFactual,
       sentiment: aiAnalysis.sentiment,
       sourceCredibility: sourceScore,
+      contentLength: articleData.contentLength,
       misinformation: {
         type: misinfoAnalysis.type,
         flags: misinfoAnalysis.flags,
         riskScore: misinfoAnalysis.riskScore
       },
       claims: claims.slice(0, 5), // Top 5 claims
+      crossVerification: {
+        sourcesFound: corroboratingSources.length,
+        confidence: verificationConfidence,
+        corroboratingSources: corroboratingSources.slice(0, 3), // Top 3
+        keywords: keywords.slice(0, 5) // Top 5 keywords
+      },
       recommendation: generateRecommendation({
         overallScore,
         aiAnalysis,
-        credibility: { overallScore: sourceCredibility },
-        misinformation: misinfoAnalysis
+        credibility: { overallScore: sourceScore },
+        misinformation: misinfoAnalysis,
+        crossVerification: {
+          sourcesFound: corroboratingSources.length,
+          avgScore: avgCorroboratingScore
+        }
       })
     };
 
@@ -307,20 +452,41 @@ exports.verifyByKeywords = async (req, res) => {
 function generateRecommendation(metadata) {
   const score = metadata.overallScore || 0;
   const misinfoType = metadata.misinformation?.type || metadata.aiAnalysis?.misinformation?.type;
+  const crossVerif = metadata.crossVerification || {};
+  const sourcesFound = crossVerif.sourcesFound || 0;
 
+  // Priority: Check for misinformation flags
   if (misinfoType && misinfoType !== 'none') {
     return `⚠️ Warning: This article shows signs of ${misinfoType.replace(/_/g, ' ')}. Exercise caution before sharing.`;
   }
 
-  if (score >= 80) {
-    return '✅ This article appears highly credible based on our analysis. Multiple quality indicators suggest reliable reporting.';
-  } else if (score >= 60) {
-    return '✓ This article shows reasonable credibility. Review the source and cross-check key claims if important.';
-  } else if (score >= 40) {
-    return '⚠️ This article has mixed credibility signals. Verify important claims with other trusted sources.';
-  } else {
-    return '❌ This article shows low credibility indicators. Strong recommendation to verify with multiple trusted sources.';
+  // Consider cross-verification
+  if (sourcesFound >= 3 && score >= 70) {
+    return `✅ Highly Credible: Verified by ${sourcesFound} other trusted sources. This appears to be reliable reporting with strong corroboration.`;
   }
+
+  if (sourcesFound >= 2 && score >= 60) {
+    return `✓ Credible: Found ${sourcesFound} corroborating sources. This story has good cross-verification from multiple outlets.`;
+  }
+
+  if (sourcesFound === 1 && score >= 60) {
+    return `✓ Reasonably Credible: Found 1 corroborating source. Consider checking additional sources for important details.`;
+  }
+
+  // No corroboration or low score
+  if (sourcesFound === 0 && score >= 70) {
+    return `⚠️ Limited Corroboration: While the source appears credible, we couldn't find other sources covering this story. It may be breaking news or exclusive reporting.`;
+  }
+
+  if (score >= 60) {
+    return `⚠️ Moderate Credibility: Limited cross-verification available. Review the source carefully and verify key claims independently.`;
+  }
+
+  if (score >= 40) {
+    return `⚠️ Mixed Signals: This article has credibility concerns and limited corroboration. Verify important claims with multiple trusted sources.`;
+  }
+
+  return `❌ Low Credibility: Strong recommendation to verify with multiple established news sources before trusting this information.`;
 }
 
 /**
