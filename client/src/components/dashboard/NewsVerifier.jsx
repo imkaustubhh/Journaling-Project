@@ -14,15 +14,20 @@ const NewsVerifier = () => {
       return;
     }
 
+    console.log('Starting verification for:', inputValue);
+
     try {
       if (activeTab === 'url') {
-        await verifyURL(inputValue.trim());
+        const response = await verifyURL(inputValue.trim());
+        console.log('Verification response:', response);
       } else {
-        await verifyKeywords(inputValue.trim());
+        const response = await verifyKeywords(inputValue.trim());
+        console.log('Verification response:', response);
       }
     } catch (err) {
       // Error is handled by the hook
       console.error('Verification error:', err);
+      console.error('Error details:', err.response?.data || err.message);
     }
   };
 
@@ -140,11 +145,18 @@ const NewsVerifier = () => {
 
       {result && (
         <div className="verification-result">
+          {console.log('Rendering result:', result)}
           {activeTab === 'url' ? (
             <URLVerificationResult result={result} getScoreColor={getScoreColor} getBiasLabel={getBiasLabel} getBiasColor={getBiasColor} />
           ) : (
             <KeywordVerificationResult result={result} getScoreColor={getScoreColor} />
           )}
+        </div>
+      )}
+
+      {!loading && !error && !result && (
+        <div className="verification-hint">
+          <p>💡 Paste a news article URL or enter keywords to check credibility</p>
         </div>
       )}
     </div>
@@ -179,7 +191,7 @@ const URLVerificationResult = ({ result, getScoreColor, getBiasLabel, getBiasCol
               ></circle>
             </svg>
             <div className="score-value">
-              <span className="score-number">{result.overallScore}</span>
+              <span className="score-number">{result.overallScore || 0}</span>
               <span className="score-label">Overall Score</span>
             </div>
           </div>
@@ -192,12 +204,12 @@ const URLVerificationResult = ({ result, getScoreColor, getBiasLabel, getBiasCol
               <div
                 className="score-bar-fill"
                 style={{
-                  width: `${result.credibilityScore}%`,
-                  backgroundColor: getScoreColor(result.credibilityScore)
+                  width: `${result.credibilityScore || 0}%`,
+                  backgroundColor: getScoreColor(result.credibilityScore || 0)
                 }}
               ></div>
             </div>
-            <span className="score-number">{result.credibilityScore}/100</span>
+            <span className="score-number">{result.credibilityScore || 0}/100</span>
           </div>
 
           <div className="score-item">
@@ -206,12 +218,12 @@ const URLVerificationResult = ({ result, getScoreColor, getBiasLabel, getBiasCol
               <div
                 className="score-bar-fill"
                 style={{
-                  width: `${result.qualityScore}%`,
-                  backgroundColor: getScoreColor(result.qualityScore)
+                  width: `${result.qualityScore || 0}%`,
+                  backgroundColor: getScoreColor(result.qualityScore || 0)
                 }}
               ></div>
             </div>
-            <span className="score-number">{result.qualityScore}/100</span>
+            <span className="score-number">{result.qualityScore || 0}/100</span>
           </div>
 
           {result.sourceCredibility !== undefined && (
@@ -221,12 +233,12 @@ const URLVerificationResult = ({ result, getScoreColor, getBiasLabel, getBiasCol
                 <div
                   className="score-bar-fill"
                   style={{
-                    width: `${result.sourceCredibility}%`,
-                    backgroundColor: getScoreColor(result.sourceCredibility)
+                    width: `${result.sourceCredibility || 0}%`,
+                    backgroundColor: getScoreColor(result.sourceCredibility || 0)
                   }}
                 ></div>
               </div>
-              <span className="score-number">{result.sourceCredibility}/100</span>
+              <span className="score-number">{result.sourceCredibility || 0}/100</span>
             </div>
           )}
         </div>

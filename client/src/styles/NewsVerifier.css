@@ -276,6 +276,22 @@
   color: var(--error);
 }
 
+/* Hint Message */
+.verification-hint {
+  margin: 0 var(--space-xl) var(--space-xl);
+  padding: var(--space-lg);
+  background: rgba(0, 112, 209, 0.05);
+  border: 1px solid rgba(0, 112, 209, 0.2);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.verification-hint p {
+  margin: 0;
+  color: var(--text-tertiary);
+  font-size: 0.875rem;
+}
+
 /* Verification Result */
 .verification-result {
   padding: var(--space-xl);
