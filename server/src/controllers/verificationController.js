@@ -11,6 +11,48 @@ const { getSourceCredibility } = require('../services/credibilityService');
 const logger = require('../utils/logger');
 
 /**
+ * Domain to Source Name Mapping
+ */
+const DOMAIN_TO_SOURCE = {
+  'thehindu.com': 'The Hindu',
+  'indianexpress.com': 'The Indian Express',
+  'hindustantimes.com': 'Hindustan Times',
+  'indiatoday.in': 'India Today',
+  'ndtv.com': 'NDTV',
+  'timesofindia.indiatimes.com': 'Times of India',
+  'economictimes.indiatimes.com': 'The Economic Times',
+  'business-standard.com': 'Business Standard',
+  'livemint.com': 'Mint',
+  'thewire.in': 'The Wire',
+  'scroll.in': 'Scroll.in',
+  'thequint.com': 'The Quint',
+  'theprint.in': 'The Print',
+  'reuters.com': 'Reuters',
+  'bbc.com': 'BBC News',
+  'bbc.co.uk': 'BBC News',
+  'cnn.com': 'CNN',
+  'nytimes.com': 'The New York Times',
+  'washingtonpost.com': 'The Washington Post',
+  'theguardian.com': 'The Guardian',
+  'aljazeera.com': 'Al Jazeera English',
+  'apnews.com': 'Associated Press',
+  'npr.org': 'NPR',
+  'pbs.org': 'PBS',
+  'bloomberg.com': 'Bloomberg',
+  'wsj.com': 'Wall Street Journal',
+  'ft.com': 'Financial Times',
+  'economist.com': 'The Economist'
+};
+
+/**
+ * Get proper source name from domain
+ */
+function getSourceNameFromDomain(domain) {
+  const cleanDomain = domain.replace('www.', '').toLowerCase();
+  return DOMAIN_TO_SOURCE[cleanDomain] || cleanDomain;
+}
+
+/**
  * Fetch article content from URL
  */
 async function fetchArticleFromURL(url) {
@@ -35,13 +77,14 @@ async function fetchArticleFromURL(url) {
 
     // Extract domain/source
     const urlObj = new URL(url);
-    const source = urlObj.hostname.replace('www.', '');
+    const domain = urlObj.hostname.replace('www.', '');
+    const sourceName = getSourceNameFromDomain(domain);
 
     return {
       title,
       description,
       url,
-      source: { name: source, url: urlObj.origin },
+      source: { name: sourceName, url: urlObj.origin },
       content: description // Use description as content for now
     };
   } catch (error) {
@@ -128,11 +171,12 @@ exports.verifyByURL = async (req, res) => {
     // Extract claims
     const claims = extractClaims(`${articleData.title} ${articleData.description}`);
 
-    // Calculate overall score
+    // Calculate overall score (with proper fallbacks)
+    const sourceScore = sourceCredibility?.overallScore || 50;
     const overallScore = Math.round(
       (aiAnalysis.qualityScore * 0.35) +
       (aiAnalysis.credibilityScore * 0.35) +
-      (sourceCredibility * 0.30)
+      (sourceScore * 0.30)
     );
 
     const verification = {
@@ -145,7 +189,7 @@ exports.verifyByURL = async (req, res) => {
       biasScore: aiAnalysis.biasScore,
       isFactual: aiAnalysis.isFactual,
       sentiment: aiAnalysis.sentiment,
-      sourceCredibility,
+      sourceCredibility: sourceScore,
       misinformation: {
         type: misinfoAnalysis.type,
         flags: misinfoAnalysis.flags,
