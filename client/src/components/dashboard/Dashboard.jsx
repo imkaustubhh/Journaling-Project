@@ -118,25 +118,35 @@ const Dashboard = () => {
         />
 
         <div className="news-feed">
-          {/* Filter Toggle Button */}
-          <button
-            className="filter-toggle-btn"
-            onClick={() => setIsFilterOpen(true)}
-            title="Show filters"
-          >
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M2 4h16M6 10h8M9 16h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-            </svg>
-            Filters
-          </button>
+          {/* Quick Access Bar */}
+          <div className="quick-access-bar">
+            <button
+              className="filter-toggle-btn"
+              onClick={() => setIsFilterOpen(true)}
+              title="Show filters"
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2 4h16M6 10h8M9 16h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+              Filters
+            </button>
+
+            <div className="feature-buttons">
+              <button className="feature-btn trending-btn" title="View trending stories">
+                <span className="btn-indicator trending-pulse"></span>
+                <span>Trending</span>
+              </button>
+              <button className="feature-btn viral-btn" title="View viral fakes">
+                <span className="btn-indicator alert-pulse"></span>
+                <span>Viral Fakes</span>
+              </button>
+            </div>
+          </div>
 
           {/* Featured Sections Grid */}
           <div className="features-grid">
             {/* News Verifier Section */}
             <NewsVerifier />
-
-            {/* Viral News Section */}
-            <ViralNews />
           </div>
 
           <div className="feed-header">
