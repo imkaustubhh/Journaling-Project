@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useArticles, useStats } from '../../hooks/useArticles';
 import ArticleCard from './ArticleCard';
@@ -11,7 +11,11 @@ import '../../styles/Dashboard.css';
 const Dashboard = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Get initial status from URL params
+  const urlStatus = searchParams.get('status') || 'approved';
 
   const {
     articles,
@@ -22,9 +26,17 @@ const Dashboard = () => {
     updateFilters,
     setPage,
     refresh
-  } = useArticles();
+  } = useArticles({ status: urlStatus });
 
   const { stats } = useStats();
+
+  // Update filters when URL changes
+  useEffect(() => {
+    const status = searchParams.get('status') || 'approved';
+    if (filters.status !== status) {
+      updateFilters({ status });
+    }
+  }, [searchParams]);
 
   const handleLogout = async () => {
     await logout();
@@ -37,11 +49,14 @@ const Dashboard = () => {
   };
 
   const handleStatusFilter = (status) => {
-    if (filters.status === status) {
-      // If clicking the same filter, clear it (show all)
-      updateFilters({ status: undefined });
+    const currentStatus = searchParams.get('status');
+
+    if (currentStatus === status) {
+      // If clicking the same filter, navigate to default (approved)
+      navigate('/dashboard?status=approved');
     } else {
-      updateFilters({ status });
+      // Navigate to the selected status
+      navigate(`/dashboard?status=${status}`);
     }
   };
 
@@ -105,7 +120,8 @@ const Dashboard = () => {
 
           <div className="feed-header">
             <h2>
-              {filters.category ? `${filters.category.charAt(0).toUpperCase() + filters.category.slice(1)} News` : 'Latest News'}
+              {filters.status === 'pending' ? 'Pending Articles' : filters.status === 'approved' ? 'Approved Articles' : 'Latest News'}
+              {filters.category && ` - ${filters.category.charAt(0).toUpperCase() + filters.category.slice(1)}`}
             </h2>
             <button onClick={refresh} className="refresh-btn">Refresh</button>
           </div>
