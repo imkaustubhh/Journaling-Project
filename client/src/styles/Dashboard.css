@@ -282,6 +282,20 @@
   transform: scale(1.1);
 }
 
+/* Features Grid - Modern Layout */
+.features-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-xl);
+}
+
+@media (max-width: 1200px) {
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .feed-header {
   display: flex;
   justify-content: space-between;

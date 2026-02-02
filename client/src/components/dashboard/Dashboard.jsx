@@ -130,11 +130,14 @@ const Dashboard = () => {
             Filters
           </button>
 
-          {/* News Verifier Section */}
-          <NewsVerifier />
+          {/* Featured Sections Grid */}
+          <div className="features-grid">
+            {/* News Verifier Section */}
+            <NewsVerifier />
 
-          {/* Viral News Section */}
-          <ViralNews />
+            {/* Viral News Section */}
+            <ViralNews />
+          </div>
 
           <div className="feed-header">
             <h2>
