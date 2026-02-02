@@ -51,6 +51,43 @@
   color: var(--text-tertiary);
 }
 
+/* Compact Tabs */
+.verifier-tabs-compact {
+  display: flex;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-md);
+}
+
+.tab-compact {
+  flex: 1;
+  padding: 8px 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 0.813rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.tab-compact:hover {
+  background: var(--bg-secondary);
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
+}
+
+.tab-compact.active {
+  background: linear-gradient(135deg, rgba(0, 112, 209, 0.15) 0%, rgba(0, 168, 232, 0.1) 100%);
+  border-color: var(--accent-primary);
+  color: var(--accent-light);
+  box-shadow: 0 2px 8px rgba(0, 112, 209, 0.2);
+}
+
 /* Input Form */
 .verifier-input-compact {
   display: flex;

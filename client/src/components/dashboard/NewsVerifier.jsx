@@ -3,16 +3,24 @@ import { useVerification } from '../../hooks/useVerification';
 import '../../styles/NewsVerifier.css';
 
 const NewsVerifier = () => {
+  const [activeTab, setActiveTab] = useState('url');
   const [isExpanded, setIsExpanded] = useState(false);
   const [urlInput, setUrlInput] = useState('');
-  const { loading, error, result, verifyURL, clearResult } = useVerification();
+  const [keywordsInput, setKeywordsInput] = useState('');
+  const { loading, error, result, verifyURL, verifyKeywords, clearResult } = useVerification();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!urlInput.trim()) return;
+
+    const inputValue = activeTab === 'url' ? urlInput : keywordsInput;
+    if (!inputValue.trim()) return;
 
     try {
-      await verifyURL(urlInput.trim());
+      if (activeTab === 'url') {
+        await verifyURL(inputValue.trim());
+      } else {
+        await verifyKeywords(inputValue.trim());
+      }
       setIsExpanded(true);
     } catch (err) {
       console.error('Verification error:', err);
@@ -21,6 +29,13 @@ const NewsVerifier = () => {
 
   const handleClose = () => {
     setUrlInput('');
+    setKeywordsInput('');
+    clearResult();
+    setIsExpanded(false);
+  };
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
     clearResult();
     setIsExpanded(false);
   };
@@ -42,15 +57,45 @@ const NewsVerifier = () => {
         </div>
       </div>
 
+      {/* Tabs */}
+      <div className="verifier-tabs-compact">
+        <button
+          className={`tab-compact ${activeTab === 'url' ? 'active' : ''}`}
+          onClick={() => handleTabChange('url')}
+        >
+          🔗 URL
+        </button>
+        <button
+          className={`tab-compact ${activeTab === 'keywords' ? 'active' : ''}`}
+          onClick={() => handleTabChange('keywords')}
+        >
+          🔍 Keywords
+        </button>
+      </div>
+
       <form className="verifier-input-compact" onSubmit={handleSubmit}>
         <input
           type="text"
-          placeholder="Paste article URL to verify..."
-          value={urlInput}
-          onChange={(e) => setUrlInput(e.target.value)}
+          placeholder={
+            activeTab === 'url'
+              ? 'Paste article URL to verify...'
+              : 'Enter keywords to search...'
+          }
+          value={activeTab === 'url' ? urlInput : keywordsInput}
+          onChange={(e) =>
+            activeTab === 'url'
+              ? setUrlInput(e.target.value)
+              : setKeywordsInput(e.target.value)
+          }
           disabled={loading}
         />
-        <button type="submit" disabled={loading || !urlInput.trim()}>
+        <button
+          type="submit"
+          disabled={
+            loading ||
+            (activeTab === 'url' ? !urlInput.trim() : !keywordsInput.trim())
+          }
+        >
           {loading ? '...' : '→'}
         </button>
       </form>
