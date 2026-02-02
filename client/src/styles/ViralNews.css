@@ -7,8 +7,18 @@
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  grid-column: 1 / -1;
   margin-bottom: var(--space-xl);
+  transition: all var(--transition-base);
+}
+
+/* Full width when has content */
+.viral-news-horizontal.has-content {
+  grid-column: 1 / -1;
+}
+
+/* Compact state when empty - stays in grid */
+.viral-news-horizontal.compact {
+  grid-column: span 1;
 }
 
 /* Section Navigation - Wired Style */
@@ -18,6 +28,11 @@
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border-color);
   padding: 0 var(--space-md);
+  transition: all var(--transition-base);
+}
+
+.viral-news-horizontal.compact .viral-nav {
+  padding: 0 var(--space-sm);
 }
 
 .viral-nav-item {
@@ -36,6 +51,11 @@
   align-items: center;
   gap: 8px;
   border-bottom: 2px solid transparent;
+}
+
+.viral-news-horizontal.compact .viral-nav-item {
+  padding: var(--space-sm) var(--space-md);
+  font-size: 0.7rem;
 }
 
 .viral-nav-item:hover {
@@ -77,6 +97,13 @@
 .viral-content-area {
   padding: var(--space-lg);
   min-height: 200px;
+  transition: all var(--transition-base);
+}
+
+/* Compact content area */
+.viral-news-horizontal.compact .viral-content-area {
+  padding: var(--space-md);
+  min-height: 80px;
 }
 
 /* Stories List */
@@ -243,17 +270,36 @@
   gap: var(--space-md);
   text-align: center;
   min-height: 200px;
+  transition: all var(--transition-base);
+}
+
+/* Compact empty state */
+.viral-news-horizontal.compact .viral-empty-horizontal {
+  padding: var(--space-md);
+  gap: var(--space-xs);
+  min-height: auto;
+  flex-direction: row;
 }
 
 .empty-icon {
   font-size: 3rem;
   opacity: 0.5;
+  transition: all var(--transition-base);
+}
+
+.viral-news-horizontal.compact .empty-icon {
+  font-size: 1.5rem;
 }
 
 .viral-empty-horizontal p {
   margin: 0;
   color: var(--text-tertiary);
   font-size: 0.95rem;
+  transition: all var(--transition-base);
+}
+
+.viral-news-horizontal.compact .viral-empty-horizontal p {
+  font-size: 0.813rem;
 }
 
 /* Loading Skeleton */

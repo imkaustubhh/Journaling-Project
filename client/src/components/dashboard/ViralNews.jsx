@@ -33,8 +33,11 @@ const ViralNews = () => {
   const loading = activeSection === 'trending' ? trendingLoading : fakeLoading;
   const stories = activeSection === 'trending' ? trending : fakeNews;
 
+  // Only show full section if there are stories or loading
+  const hasContent = loading || stories.length > 0;
+
   return (
-    <div className="viral-news-horizontal">
+    <div className={`viral-news-horizontal ${hasContent ? 'has-content' : 'compact'}`}>
       {/* Section Navigation */}
       <div className="viral-nav">
         <button
