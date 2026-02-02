@@ -36,6 +36,15 @@ const Dashboard = () => {
     updateFilters({ search: searchQuery });
   };
 
+  const handleStatusFilter = (status) => {
+    if (filters.status === status) {
+      // If clicking the same filter, clear it (show all)
+      updateFilters({ status: undefined });
+    } else {
+      updateFilters({ status });
+    }
+  };
+
   return (
     <div className="dashboard">
       <header className="dashboard-header">
@@ -43,9 +52,26 @@ const Dashboard = () => {
           <h1>Real News Filter</h1>
           {stats && (
             <div className="header-stats">
-              <span>{stats.approvedArticles} approved</span>
-              <span>{stats.pendingArticles} pending</span>
-              <span>Avg: {stats.averageScore}</span>
+              <button
+                className={`stat-btn stat-approved ${filters.status === 'approved' ? 'active' : ''}`}
+                onClick={() => handleStatusFilter('approved')}
+                title="Click to filter approved articles"
+              >
+                <span className="stat-indicator approved"></span>
+                {stats.approvedArticles} approved
+              </button>
+              <button
+                className={`stat-btn stat-pending ${filters.status === 'pending' ? 'active' : ''}`}
+                onClick={() => handleStatusFilter('pending')}
+                title="Click to filter pending articles"
+              >
+                <span className="stat-indicator pending"></span>
+                {stats.pendingArticles} pending
+              </button>
+              <span className="stat-average">
+                <span className="stat-indicator average"></span>
+                Avg: {stats.averageScore}
+              </span>
             </div>
           )}
         </div>

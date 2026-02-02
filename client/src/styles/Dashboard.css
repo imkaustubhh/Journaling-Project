@@ -54,37 +54,92 @@
   font-size: 0.8rem;
 }
 
-.header-stats span {
+/* Stat Button - Clickable */
+.stat-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   color: var(--text-secondary);
-  padding: 6px 14px;
+  padding: 8px 16px;
   background: rgba(255, 255, 255, 0.03);
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
-  transition: all var(--transition-fast);
+  transition: all var(--transition-base);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+  position: relative;
+  overflow: hidden;
 }
 
-.header-stats span:hover {
-  border-color: var(--accent-primary);
-  background: rgba(0, 112, 209, 0.1);
-}
-
-.header-stats span::before {
+.stat-btn::after {
   content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.stat-btn:hover::after {
+  left: 100%;
+}
+
+.stat-btn:hover {
+  border-color: var(--accent-primary);
+  background: rgba(0, 112, 209, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 112, 209, 0.3);
+}
+
+.stat-btn:active {
+  transform: translateY(0);
+}
+
+.stat-btn.active {
+  background: linear-gradient(135deg, rgba(0, 112, 209, 0.2) 0%, rgba(0, 168, 232, 0.2) 100%);
+  border-color: var(--accent-primary);
+  color: var(--accent-light);
+  box-shadow: 0 4px 12px rgba(0, 112, 209, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Stat Average - Non-clickable */
+.stat-average {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+/* Stat Indicators */
+.stat-indicator {
   width: 8px;
   height: 8px;
   border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.stat-indicator.approved {
   background: var(--success);
+  box-shadow: 0 0 8px var(--success);
 }
 
-.header-stats span:nth-child(2)::before {
+.stat-indicator.pending {
   background: var(--warning);
+  box-shadow: 0 0 8px var(--warning);
 }
 
-.header-stats span:nth-child(3)::before {
+.stat-indicator.average {
   background: var(--accent-primary);
+  box-shadow: 0 0 8px var(--accent-primary);
 }
 
 .header-right {
