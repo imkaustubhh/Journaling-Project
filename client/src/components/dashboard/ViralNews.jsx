@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTrendingViral, useFakeNews } from '../../hooks/useViralNews';
 import '../../styles/ViralNews.css';
 
 const ViralNews = () => {
+  const [activeSection, setActiveSection] = useState('trending');
   const { stories: trending, loading: trendingLoading } = useTrendingViral(5);
   const { stories: fakeNews, loading: fakeLoading } = useFakeNews(3);
 
@@ -29,115 +30,106 @@ const ViralNews = () => {
     return `${Math.floor(diffHours / 24)}d ago`;
   };
 
-  return (
-    <div className="viral-news-section">
-      {/* Trending Stories */}
-      <div className="viral-card trending">
-        <div className="viral-header">
-          <div className="viral-title">
-            <span className="viral-icon trending-icon"></span>
-            <h3>Trending Stories</h3>
-          </div>
-          <span className="viral-badge live">LIVE</span>
-        </div>
+  const loading = activeSection === 'trending' ? trendingLoading : fakeLoading;
+  const stories = activeSection === 'trending' ? trending : fakeNews;
 
-        <div className="viral-list">
-          {trendingLoading ? (
-            <div className="viral-loading">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="viral-item skeleton">
-                  <div className="skeleton-title"></div>
-                  <div className="skeleton-meta"></div>
-                </div>
-              ))}
-            </div>
-          ) : trending.length === 0 ? (
-            <div className="viral-empty">
-              <p>No trending stories detected yet</p>
-            </div>
-          ) : (
-            trending.map((story, index) => {
-              const status = getStatusBadge(story.verification?.status);
-              return (
-                <div key={story._id} className="viral-item" style={{ animationDelay: `${index * 0.1}s` }}>
-                  <div className="viral-rank">{index + 1}</div>
-                  <div className="viral-content">
-                    <h4 className="viral-story-title">{story.title}</h4>
-                    <div className="viral-meta">
-                      <span className={`status-badge ${status.class}`}>
-                        {status.label}
-                      </span>
-                      <span className="viral-score">
-                        <span className="score-icon"></span>
-                        {Math.round(story.virality?.score || 0)}
-                      </span>
-                      <span className="viral-sources">
-                        {story.relatedArticles?.length || 0} sources
-                      </span>
-                      <span className="viral-time">
-                        {formatTimeAgo(story.createdAt)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
+  return (
+    <div className="viral-news-horizontal">
+      {/* Section Navigation */}
+      <div className="viral-nav">
+        <button
+          className={`viral-nav-item ${activeSection === 'trending' ? 'active' : ''}`}
+          onClick={() => setActiveSection('trending')}
+        >
+          <span className="nav-indicator trending-pulse"></span>
+          TRENDING
+        </button>
+        <button
+          className={`viral-nav-item ${activeSection === 'fakes' ? 'active' : ''}`}
+          onClick={() => setActiveSection('fakes')}
+        >
+          <span className="nav-indicator alert-pulse"></span>
+          VIRAL FAKES
+        </button>
       </div>
 
-      {/* Viral Fakes */}
-      <div className="viral-card alerts">
-        <div className="viral-header">
-          <div className="viral-title">
-            <span className="viral-icon alert-icon"></span>
-            <h3>Viral Fakes</h3>
+      {/* Content Area */}
+      <div className="viral-content-area">
+        {loading ? (
+          <div className="viral-loading-horizontal">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="skeleton-item-horizontal">
+                <div className="skeleton-line"></div>
+                <div className="skeleton-line short"></div>
+              </div>
+            ))}
           </div>
-          <span className="viral-badge alert">ALERT</span>
-        </div>
-
-        <div className="viral-list">
-          {fakeLoading ? (
-            <div className="viral-loading">
-              {[1, 2].map(i => (
-                <div key={i} className="viral-item skeleton">
-                  <div className="skeleton-title"></div>
-                  <div className="skeleton-meta"></div>
-                </div>
-              ))}
-            </div>
-          ) : fakeNews.length === 0 ? (
-            <div className="viral-empty">
-              <span className="check-icon"></span>
-              <p>No viral fakes detected</p>
-            </div>
-          ) : (
-            fakeNews.map((story, index) => {
-              const type = story.misinformationAnalysis?.type || 'unknown';
-              return (
-                <div key={story._id} className="viral-item alert-item" style={{ animationDelay: `${index * 0.1}s` }}>
-                  <div className="alert-indicator"></div>
-                  <div className="viral-content">
-                    <h4 className="viral-story-title">{story.title}</h4>
-                    <div className="viral-meta">
-                      <span className="misinfo-type">
-                        {type.replace(/_/g, ' ')}
-                      </span>
-                      <span className="confidence">
-                        {story.verification?.confidenceScore || 0}% confidence
-                      </span>
+        ) : stories.length === 0 ? (
+          <div className="viral-empty-horizontal">
+            <span className="empty-icon">{activeSection === 'trending' ? '📊' : '✓'}</span>
+            <p>
+              {activeSection === 'trending'
+                ? 'No trending stories detected yet'
+                : 'No viral fakes detected'}
+            </p>
+          </div>
+        ) : (
+          <div className="viral-stories-horizontal">
+            {stories.map((story, index) => {
+              if (activeSection === 'trending') {
+                const status = getStatusBadge(story.verification?.status);
+                return (
+                  <div
+                    key={story._id}
+                    className="viral-story-item"
+                    style={{ animationDelay: `${index * 0.05}s` }}
+                  >
+                    <div className="story-rank">{index + 1}</div>
+                    <div className="story-content">
+                      <h4 className="story-title">{story.title}</h4>
+                      <div className="story-meta">
+                        <span className={`status-badge ${status.class}`}>
+                          {status.label}
+                        </span>
+                        <span className="meta-item">
+                          {Math.round(story.virality?.score || 0)} score
+                        </span>
+                        <span className="meta-item">
+                          {story.relatedArticles?.length || 0} sources
+                        </span>
+                        <span className="meta-item meta-time">
+                          {formatTimeAgo(story.createdAt)}
+                        </span>
+                      </div>
                     </div>
-                    {story.claims?.length > 0 && (
-                      <p className="claim-preview">
-                        {story.claims[0]?.text?.substring(0, 80)}...
-                      </p>
-                    )}
                   </div>
-                </div>
-              );
-            })
-          )}
-        </div>
+                );
+              } else {
+                const type = story.misinformationAnalysis?.type || 'unknown';
+                return (
+                  <div
+                    key={story._id}
+                    className="viral-story-item fake-item"
+                    style={{ animationDelay: `${index * 0.05}s` }}
+                  >
+                    <div className="fake-indicator">⚠</div>
+                    <div className="story-content">
+                      <h4 className="story-title">{story.title}</h4>
+                      <div className="story-meta">
+                        <span className="misinfo-badge">
+                          {type.replace(/_/g, ' ')}
+                        </span>
+                        <span className="meta-item">
+                          {story.verification?.confidenceScore || 0}% confidence
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              }
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
