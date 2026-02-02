@@ -249,6 +249,39 @@
   min-width: 0;
 }
 
+/* Filter Toggle Button */
+.filter-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 12px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  margin-bottom: var(--space-lg);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.filter-toggle-btn:hover {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  box-shadow: 0 4px 16px rgba(0, 112, 209, 0.4);
+  transform: translateY(-2px);
+}
+
+.filter-toggle-btn svg {
+  transition: transform var(--transition-base);
+}
+
+.filter-toggle-btn:hover svg {
+  transform: scale(1.1);
+}
+
 .feed-header {
   display: flex;
   justify-content: space-between;

@@ -13,6 +13,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   // Get initial status from URL params
   const urlStatus = searchParams.get('status') || 'approved';
@@ -109,9 +110,26 @@ const Dashboard = () => {
       </header>
 
       <main className="dashboard-main">
-        <FilterSidebar filters={filters} onFilterChange={updateFilters} />
+        <FilterSidebar
+          filters={filters}
+          onFilterChange={updateFilters}
+          isOpen={isFilterOpen}
+          onClose={() => setIsFilterOpen(false)}
+        />
 
         <div className="news-feed">
+          {/* Filter Toggle Button */}
+          <button
+            className="filter-toggle-btn"
+            onClick={() => setIsFilterOpen(true)}
+            title="Show filters"
+          >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M2 4h16M6 10h8M9 16h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+            Filters
+          </button>
+
           {/* News Verifier Section */}
           <NewsVerifier />
 

@@ -2,7 +2,7 @@ import React from 'react';
 import { useCategories, useSources } from '../../hooks/useArticles';
 import '../../styles/FilterSidebar.css';
 
-const FilterSidebar = ({ filters, onFilterChange }) => {
+const FilterSidebar = ({ filters, onFilterChange, isOpen, onClose }) => {
   const { categories, loading: categoriesLoading } = useCategories();
   const { sources, loading: sourcesLoading } = useSources();
 
@@ -43,14 +43,24 @@ const FilterSidebar = ({ filters, onFilterChange }) => {
     filters.minScore > 0 || filters.status !== 'approved';
 
   return (
-    <aside className="filter-sidebar">
+    <>
+      {/* Backdrop */}
+      {isOpen && <div className="filter-backdrop" onClick={onClose}></div>}
+
+      {/* Sidebar */}
+      <aside className={`filter-sidebar ${isOpen ? 'open' : ''}`}>
       <div className="filter-header">
         <h2>Filters</h2>
-        {hasActiveFilters && (
-          <button className="clear-btn" onClick={clearFilters}>
-            Clear All
+        <div className="filter-actions">
+          {hasActiveFilters && (
+            <button className="clear-btn" onClick={clearFilters}>
+              Clear All
+            </button>
+          )}
+          <button className="close-btn" onClick={onClose} title="Close filters">
+            ✕
           </button>
-        )}
+        </div>
       </div>
 
       {/* Sort */}
@@ -153,6 +163,7 @@ const FilterSidebar = ({ filters, onFilterChange }) => {
         </div>
       </div>
     </aside>
+    </>
   );
 };
 

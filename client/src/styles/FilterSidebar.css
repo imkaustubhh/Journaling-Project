@@ -1,17 +1,61 @@
 /* ================================================
-   Filter Sidebar - PS5-Inspired Design
+   Filter Sidebar - PS5-Inspired Design (Dropdown)
    ================================================ */
 
+/* Backdrop */
+.filter-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 999;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Filter Sidebar - Dropdown Style */
 .filter-sidebar {
-  width: 300px;
+  position: fixed;
+  left: -320px;
+  top: 0;
+  bottom: 0;
+  width: 320px;
+  max-width: 85vw;
   background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: var(--space-lg);
-  height: fit-content;
-  position: sticky;
-  top: 100px;
-  flex-shrink: 0;
+  border-right: 1px solid var(--border-color);
+  padding: var(--space-xl);
+  z-index: 1000;
+  overflow-y: auto;
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+}
+
+.filter-sidebar.open {
+  left: 0;
+}
+
+/* Custom scrollbar for sidebar */
+.filter-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.filter-sidebar::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+  border-radius: 3px;
+}
+
+.filter-sidebar::-webkit-scrollbar-thumb {
+  background: var(--accent-primary);
+  border-radius: 3px;
+}
+
+.filter-sidebar::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-secondary);
 }
 
 .filter-header {
@@ -41,6 +85,13 @@
   border-radius: 2px;
 }
 
+/* Filter Actions */
+.filter-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
 .clear-btn {
   background: none;
   border: none;
@@ -56,6 +107,28 @@
 .clear-btn:hover {
   background: rgba(0, 112, 209, 0.1);
   color: var(--text-primary);
+}
+
+.close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.close-btn:hover {
+  background: rgba(255, 59, 92, 0.1);
+  border-color: var(--error);
+  color: var(--error);
+  transform: rotate(90deg);
 }
 
 /* Filter Sections */
