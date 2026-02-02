@@ -379,7 +379,7 @@
   grid-template-columns: 1fr;
   gap: var(--space-lg);
   margin-bottom: var(--space-xl);
-  max-width: 700px;
+  max-width: 450px;
 }
 
 .feed-header {
