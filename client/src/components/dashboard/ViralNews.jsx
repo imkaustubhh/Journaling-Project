@@ -86,12 +86,12 @@ const ViralNews = () => {
         </div>
       </div>
 
-      {/* Fake News Alerts */}
+      {/* Viral Fakes */}
       <div className="viral-card alerts">
         <div className="viral-header">
           <div className="viral-title">
             <span className="viral-icon alert-icon"></span>
-            <h3>Misinformation Alerts</h3>
+            <h3>Viral Fakes</h3>
           </div>
           <span className="viral-badge alert">ALERT</span>
         </div>
@@ -109,7 +109,7 @@ const ViralNews = () => {
           ) : fakeNews.length === 0 ? (
             <div className="viral-empty">
               <span className="check-icon"></span>
-              <p>No misinformation detected</p>
+              <p>No viral fakes detected</p>
             </div>
           ) : (
             fakeNews.map((story, index) => {
