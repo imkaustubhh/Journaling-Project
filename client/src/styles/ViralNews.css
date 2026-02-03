@@ -1,38 +1,92 @@
 /* ================================================
-   Viral News - Wired-Inspired Horizontal Sections
+   Viral News - Modal Design
    ================================================ */
 
-.viral-news-horizontal {
+/* Backdrop */
+.viral-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: var(--z-modal);
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Modal Container */
+.viral-news-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.95);
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
+  max-width: 800px;
+  width: 90%;
+  max-height: 90vh;
   overflow: hidden;
-  margin-bottom: var(--space-xl);
-  transition: all var(--transition-base);
+  z-index: var(--z-modal-content);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
 }
 
-/* Full width when has content */
-.viral-news-horizontal.has-content {
-  grid-column: 1 / -1;
+.viral-news-modal.open {
+  opacity: 1;
+  pointer-events: all;
+  transform: translate(-50%, -50%) scale(1);
 }
 
-/* Compact state when empty - stays in grid */
-.viral-news-horizontal.compact {
-  grid-column: span 1;
+/* Modal Header */
+.viral-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-lg) var(--space-xl);
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
 }
 
-/* Section Navigation - Wired Style */
+.viral-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.viral-header .close-btn {
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 59, 92, 0.1);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 1.4rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.viral-header .close-btn:hover {
+  background: rgba(255, 59, 92, 0.2);
+  color: var(--error);
+  transform: rotate(90deg);
+}
+
+/* Section Navigation */
 .viral-nav {
   display: flex;
   gap: 0;
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border-color);
-  padding: 0 var(--space-md);
-  transition: all var(--transition-base);
-}
-
-.viral-news-horizontal.compact .viral-nav {
-  padding: 0 var(--space-sm);
+  padding: 0 var(--space-xl);
+  flex-shrink: 0;
 }
 
 .viral-nav-item {
@@ -51,11 +105,6 @@
   align-items: center;
   gap: 8px;
   border-bottom: 2px solid transparent;
-}
-
-.viral-news-horizontal.compact .viral-nav-item {
-  padding: var(--space-sm) var(--space-md);
-  font-size: 0.7rem;
 }
 
 .viral-nav-item:hover {
@@ -95,15 +144,10 @@
 
 /* Content Area */
 .viral-content-area {
-  padding: var(--space-lg);
-  min-height: 200px;
-  transition: all var(--transition-base);
-}
-
-/* Compact content area */
-.viral-news-horizontal.compact .viral-content-area {
-  padding: var(--space-md);
-  min-height: 80px;
+  padding: var(--space-xl);
+  overflow-y: auto;
+  flex: 1;
+  min-height: 300px;
 }
 
 /* Stories List */
@@ -266,40 +310,21 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--space-xl);
+  padding: var(--space-3xl);
   gap: var(--space-md);
   text-align: center;
-  min-height: 200px;
-  transition: all var(--transition-base);
-}
-
-/* Compact empty state */
-.viral-news-horizontal.compact .viral-empty-horizontal {
-  padding: var(--space-md);
-  gap: var(--space-xs);
-  min-height: auto;
-  flex-direction: row;
+  min-height: 300px;
 }
 
 .empty-icon {
   font-size: 3rem;
   opacity: 0.5;
-  transition: all var(--transition-base);
-}
-
-.viral-news-horizontal.compact .empty-icon {
-  font-size: 1.5rem;
 }
 
 .viral-empty-horizontal p {
   margin: 0;
   color: var(--text-tertiary);
   font-size: 0.95rem;
-  transition: all var(--transition-base);
-}
-
-.viral-news-horizontal.compact .viral-empty-horizontal p {
-  font-size: 0.813rem;
 }
 
 /* Loading Skeleton */

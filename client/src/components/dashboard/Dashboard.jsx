@@ -15,6 +15,7 @@ const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isVerifierOpen, setIsVerifierOpen] = useState(false);
+  const [viralSection, setViralSection] = useState(null); // 'trending' or 'fakes'
 
   // Get initial status from URL params
   const urlStatus = searchParams.get('status') || 'approved';
@@ -141,11 +142,19 @@ const Dashboard = () => {
                 <span>🛡️</span>
                 <span>Verify</span>
               </button>
-              <button className="feature-btn trending-btn" title="View trending stories">
+              <button
+                className="feature-btn trending-btn"
+                title="View trending stories"
+                onClick={() => setViralSection('trending')}
+              >
                 <span className="btn-indicator trending-pulse"></span>
                 <span>Trending</span>
               </button>
-              <button className="feature-btn viral-btn" title="View viral fakes">
+              <button
+                className="feature-btn viral-btn"
+                title="View viral fakes"
+                onClick={() => setViralSection('fakes')}
+              >
                 <span className="btn-indicator alert-pulse"></span>
                 <span>Viral Fakes</span>
               </button>
@@ -156,6 +165,13 @@ const Dashboard = () => {
           <NewsVerifier
             isOpen={isVerifierOpen}
             onClose={() => setIsVerifierOpen(false)}
+          />
+
+          {/* Viral News Modal */}
+          <ViralNews
+            isOpen={viralSection !== null}
+            onClose={() => setViralSection(null)}
+            initialSection={viralSection || 'trending'}
           />
 
           <div className="feed-header">

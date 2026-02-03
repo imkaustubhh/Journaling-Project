@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { useTrendingViral, useFakeNews } from '../../hooks/useViralNews';
 import '../../styles/ViralNews.css';
 
-const ViralNews = () => {
-  const [activeSection, setActiveSection] = useState('trending');
-  const { stories: trending, loading: trendingLoading } = useTrendingViral(5);
-  const { stories: fakeNews, loading: fakeLoading } = useFakeNews(3);
+const ViralNews = ({ isOpen, onClose, initialSection = 'trending' }) => {
+  const [activeSection, setActiveSection] = useState(initialSection);
+  const { stories: trending, loading: trendingLoading } = useTrendingViral(10);
+  const { stories: fakeNews, loading: fakeLoading } = useFakeNews(10);
 
   const getStatusBadge = (status) => {
     const badges = {
@@ -33,13 +33,24 @@ const ViralNews = () => {
   const loading = activeSection === 'trending' ? trendingLoading : fakeLoading;
   const stories = activeSection === 'trending' ? trending : fakeNews;
 
-  // Only show full section if there are stories or loading
-  const hasContent = loading || stories.length > 0;
-
   return (
-    <div className={`viral-news-horizontal ${hasContent ? 'has-content' : 'compact'}`}>
-      {/* Section Navigation */}
-      <div className="viral-nav">
+    <>
+      {/* Backdrop */}
+      {isOpen && <div className="viral-backdrop" onClick={onClose}></div>}
+
+      {/* Modal */}
+      <div className={`viral-news-modal ${isOpen ? 'open' : ''}`}>
+        <div className="viral-header">
+          <h3>
+            {activeSection === 'trending' ? '📊 Trending Stories' : '⚠️ Viral Fakes'}
+          </h3>
+          <button className="close-btn" onClick={onClose} title="Close">
+            ✕
+          </button>
+        </div>
+
+        {/* Section Navigation */}
+        <div className="viral-nav">
         <button
           className={`viral-nav-item ${activeSection === 'trending' ? 'active' : ''}`}
           onClick={() => setActiveSection('trending')}
@@ -134,7 +145,8 @@ const ViralNews = () => {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 
