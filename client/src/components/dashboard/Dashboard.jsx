@@ -14,6 +14,7 @@ const Dashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isVerifierOpen, setIsVerifierOpen] = useState(false);
 
   // Get initial status from URL params
   const urlStatus = searchParams.get('status') || 'approved';
@@ -132,6 +133,14 @@ const Dashboard = () => {
             </button>
 
             <div className="feature-buttons">
+              <button
+                className="feature-btn verifier-btn"
+                title="Verify news article"
+                onClick={() => setIsVerifierOpen(true)}
+              >
+                <span>🛡️</span>
+                <span>Verify</span>
+              </button>
               <button className="feature-btn trending-btn" title="View trending stories">
                 <span className="btn-indicator trending-pulse"></span>
                 <span>Trending</span>
@@ -143,11 +152,11 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Featured Sections Grid */}
-          <div className="features-grid">
-            {/* News Verifier Section */}
-            <NewsVerifier />
-          </div>
+          {/* News Verifier Modal */}
+          <NewsVerifier
+            isOpen={isVerifierOpen}
+            onClose={() => setIsVerifierOpen(false)}
+          />
 
           <div className="feed-header">
             <h2>

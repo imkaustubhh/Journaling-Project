@@ -349,6 +349,12 @@
   box-shadow: 0 4px 16px rgba(255, 59, 92, 0.4);
 }
 
+.verifier-btn:hover {
+  background: linear-gradient(135deg, rgba(0, 210, 106, 0.15) 0%, rgba(0, 168, 232, 0.1) 100%);
+  border-color: var(--success);
+  box-shadow: 0 4px 16px rgba(0, 210, 106, 0.4);
+}
+
 .btn-indicator {
   width: 6px;
   height: 6px;
@@ -371,15 +377,6 @@
 @keyframes pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.6; transform: scale(0.9); }
-}
-
-/* Features Grid - Modern Layout */
-.features-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-lg);
-  margin-bottom: var(--space-xl);
-  max-width: 450px;
 }
 
 .feed-header {
@@ -644,10 +641,6 @@
     flex: 1;
     justify-content: center;
     font-size: 0.75rem;
-  }
-
-  .features-grid {
-    max-width: 100%;
   }
 }
 

@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { useVerification } from '../../hooks/useVerification';
 import '../../styles/NewsVerifier.css';
 
-const NewsVerifier = () => {
-  const [isExpanded, setIsExpanded] = useState(false);
+const NewsVerifier = ({ isOpen, onClose }) => {
   const [input, setInput] = useState('');
   const { loading, error, result, verifyURL, verifyKeywords, clearResult } = useVerification();
 
@@ -21,7 +20,6 @@ const NewsVerifier = () => {
       } else {
         await verifyKeywords(input.trim());
       }
-      setIsExpanded(true);
     } catch (err) {
       console.error('Verification error:', err);
     }
@@ -30,7 +28,7 @@ const NewsVerifier = () => {
   const handleClose = () => {
     setInput('');
     clearResult();
-    setIsExpanded(false);
+    onClose();
   };
 
   const getScoreColor = (score) => {
@@ -41,16 +39,24 @@ const NewsVerifier = () => {
   };
 
   return (
-    <div className={`news-verifier-compact ${isExpanded ? 'expanded' : ''}`}>
-      <div className="verifier-compact-header">
-        <div className="verifier-icon-compact">🛡️</div>
-        <div className="verifier-title-compact">
-          <h3>News Verifier</h3>
-          <p>Check article credibility</p>
-        </div>
-      </div>
+    <>
+      {/* Backdrop */}
+      {isOpen && <div className="verifier-backdrop" onClick={onClose}></div>}
 
-      <form className="verifier-input-compact" onSubmit={handleSubmit}>
+      {/* Modal */}
+      <div className={`news-verifier-modal ${isOpen ? 'open' : ''}`}>
+        <div className="verifier-header">
+          <div className="verifier-icon-compact">🛡️</div>
+          <div className="verifier-title-compact">
+            <h3>News Verifier</h3>
+            <p>Check article credibility</p>
+          </div>
+          <button className="close-btn" onClick={handleClose} title="Close verifier">
+            ✕
+          </button>
+        </div>
+
+        <form className="verifier-input-compact" onSubmit={handleSubmit}>
         <input
           type="text"
           placeholder="Paste article insight to verify..."
@@ -72,9 +78,8 @@ const NewsVerifier = () => {
         </div>
       )}
 
-      {result && isExpanded && (
+      {result && (
         <div className="verifier-result-compact">
-          <button className="close-result" onClick={handleClose}>×</button>
 
           <div className="score-display-compact">
             <div className="main-score-compact" style={{ color: getScoreColor(result.overallScore || 0) }}>
@@ -118,7 +123,8 @@ const NewsVerifier = () => {
           )}
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 };
 

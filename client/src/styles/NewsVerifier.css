@@ -1,28 +1,81 @@
 /* ================================================
-   News Verifier - Modern Compact Design
+   News Verifier - Modal Design
    ================================================ */
 
-.news-verifier-compact {
+/* Backdrop */
+.verifier-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: var(--z-modal);
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Modal Container */
+.news-verifier-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.95);
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: var(--space-lg);
-  transition: all var(--transition-base);
-  position: relative;
-  overflow: hidden;
-  height: fit-content;
+  padding: var(--space-xl);
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  z-index: var(--z-modal-content);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.news-verifier-compact.expanded {
-  grid-column: 1 / -1;
+.news-verifier-modal.open {
+  opacity: 1;
+  pointer-events: all;
+  transform: translate(-50%, -50%) scale(1);
 }
 
 /* Header */
-.verifier-compact-header {
+.verifier-header {
   display: flex;
   align-items: center;
   gap: var(--space-md);
-  margin-bottom: var(--space-md);
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.verifier-header .close-btn {
+  margin-left: auto;
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 59, 92, 0.1);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 1.4rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.verifier-header .close-btn:hover {
+  background: rgba(255, 59, 92, 0.2);
+  color: var(--error);
+  transform: rotate(90deg);
 }
 
 .verifier-icon-compact {
